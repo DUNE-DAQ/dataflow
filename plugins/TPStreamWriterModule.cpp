@@ -211,8 +211,15 @@ TPStreamWriterModule::do_work(std::atomic<bool>& running_flag)
       tp_bundle_handler.add_tpset(std::move(tpset));
       m_tps_received += num_tps_in_tpset;
       m_total_tps_received += num_tps_in_tpset;
+      possible_pending_data = true;
+    } catch (iomanager::ConnectionInstanceNotFound&) {
+      // sleep for a little bit; and indicate no pending data, in case we never get a connection
+      // and the run ends - we don't want to believe that there is pending data in that case.
+      usleep(1000 * m_queue_timeout.count());
+      possible_pending_data = false;
     } catch (iomanager::TimeoutExpired&) {
-      if (running_flag.load()) {continue;}
+      // nothing special to do here, we'll simply let the rest of the code in this
+      // while loop do its job
     }
 
     std::vector<std::unique_ptr<daqdataformats::TimeSlice>> list_of_timeslices;
