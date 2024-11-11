@@ -11,7 +11,7 @@
 #include "dfmodules/opmon/DataWriter.pb.h"
 
 #include "confmodel/Application.hpp"
-#include "confmodel/Session.hpp"
+#include "confmodel/System.hpp"
 #include "appmodel/DataWriterModule.hpp"
 #include "appmodel/TRBModule.hpp"
 #include "appmodel/DataStoreConf.hpp"

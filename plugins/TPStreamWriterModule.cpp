@@ -14,7 +14,7 @@
 #include "appmodel/DataStoreConf.hpp"
 #include "appmodel/TPStreamWriterModule.hpp"
 #include "confmodel/Connection.hpp"
-#include "confmodel/Session.hpp"
+#include "confmodel/System.hpp"
 #include "iomanager/IOManager.hpp"
 #include "daqdataformats/Fragment.hpp"
 #include "daqdataformats/Types.hpp"

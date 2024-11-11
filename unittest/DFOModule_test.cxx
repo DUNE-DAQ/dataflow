@@ -40,18 +40,19 @@ BOOST_TEST_GLOBAL_FIXTURE(EnvFixture);
 struct CfgFixture
 {
   CfgFixture()
-  {   std::string oksConfig = "oksconflibs:test/config/datafloworchestrator_test.data.xml";
+  {
+    std::string systemName = "system_name";
+    std::string oksConfig = "oksconflibs:test/config/datafloworchestrator_test.data.xml:"+systemName;
     std::string appName = "TestApp";
-    std::string sessionName = "partition_name";
-    cfgMgr = std::make_shared<dunedaq::appfwk::ConfigurationManager>(oksConfig, appName, sessionName);
+    cfgMgr = std::make_shared<dunedaq::appfwk::ConfigurationManager>(oksConfig, appName);
     modCfg  = std::make_shared<dunedaq::appfwk::ModuleConfiguration>(cfgMgr);
-    get_iomanager()->configure(sessionName, modCfg->queues(), modCfg->networkconnections(), nullptr, opmgr);
+    get_iomanager()->configure(systemName, modCfg->queues(), modCfg->networkconnections(), nullptr, opmgr);
   }
   ~CfgFixture() {
     get_iomanager()->reset();
   }
 
-  auto get_dfo_info()	{	
+  auto get_dfo_info()	{
 
     opmgr.collect();
     auto opmon_facility = opmgr.get_backend_facility();
@@ -60,7 +61,7 @@ struct CfgFixture
     const auto & entry = list.front();
     return opmonlib::from_entry<dfmodules::opmon::DFOInfo>( entry );
   }
-  
+
   dunedaq::opmonlib::TestOpMonManager opmgr;
   std::shared_ptr<dunedaq::appfwk::ConfigurationManager> cfgMgr;
   std::shared_ptr<dunedaq::appfwk::ModuleConfiguration> modCfg;
@@ -168,7 +169,7 @@ BOOST_AUTO_TEST_CASE(Commands)
   BOOST_REQUIRE_EQUAL(metric.deciding_destination(), 0);
   BOOST_REQUIRE_EQUAL(metric.waiting_for_token(), 0);
   BOOST_REQUIRE_EQUAL(metric.processing_token(), 0);
-  
+
 }
 
 BOOST_AUTO_TEST_CASE(DataFlow)
@@ -197,11 +198,11 @@ BOOST_AUTO_TEST_CASE(DataFlow)
   send_token(9999, "trigdec_0", true);
   std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
-  
-  
+
+
   // Note: Counters are reset by calling get_dfo_info!
   auto metric = get_dfo_info();
-  
+
   BOOST_REQUIRE_EQUAL(metric.tokens_received(), 0);
 
   dfo->execute_command("start", start_json);

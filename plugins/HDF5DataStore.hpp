@@ -21,7 +21,7 @@
 #include "appmodel/DataStoreConf.hpp"
 #include "appmodel/FilenameParams.hpp"
 #include "confmodel/DetectorConfig.hpp"
-#include "confmodel/Session.hpp"
+#include "confmodel/System.hpp"
 
 #include "appfwk/DAQModule.hpp"
 #include "logging/Logging.hpp"
@@ -126,9 +126,9 @@ public:
 
     m_config_params = mcfg->module<appmodel::DataStoreConf>(name);
     m_file_layout_params = m_config_params->get_file_layout_params();
-    m_session = mcfg->configuration_manager()->session();
-    m_operational_environment = mcfg->configuration_manager()->session()->get_detector_configuration()->get_op_env();
-    m_offline_data_stream = mcfg->configuration_manager()->session()->get_detector_configuration()->get_offline_data_stream();
+    m_system = mcfg->configuration_manager()->system();
+    m_operational_environment = mcfg->configuration_manager()->system()->get_detector_configuration()->get_op_env();
+    m_offline_data_stream = mcfg->configuration_manager()->system()->get_detector_configuration()->get_offline_data_stream();
 
     m_operation_mode = m_config_params->get_mode();
     m_path = m_config_params->get_directory_path();
@@ -367,7 +367,7 @@ private:
   unsigned m_open_flags_of_open_file;
   daqdataformats::run_number_t m_run_number;
   bool m_run_is_for_test_purposes;
-  const confmodel::Session* m_session;
+  const confmodel::System* m_system;
   std::string m_operational_environment;
   std::string m_offline_data_stream;
   std::string m_writer_identifier;
@@ -481,7 +481,7 @@ private:
                                         m_file_index,
                                         m_writer_identifier,
                                         m_file_layout_params,
-                                        hdf5libs::HDF5SourceIDHandler::make_source_id_geo_id_map(m_session),
+                                        hdf5libs::HDF5SourceIDHandler::make_source_id_geo_id_map(m_system),
                                         ".writing",
                                         open_flags));
       } catch (std::exception const& excpt) {

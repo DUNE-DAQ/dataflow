@@ -385,7 +385,7 @@
  <attr name="eth_device_name" type="string" val="lo"/>
 </obj>
 
-<obj class="Session" id="partition_name">
+<obj class="System" id="system_name">
  <attr name="data_request_timeout_ms" type="u32" val="1000"/>
  <attr name="data_rate_slowdown_factor" type="u32" val="1"/>
  <attr name="rte_script" type="string" val="/home/gjc/DUNE/fddaq-v4.2.0-a9/install/daq_app_rte.sh"/>
@@ -443,11 +443,6 @@
  <attr name="value" type="string" val="erstrace,throttle,lstdout"/>
 </obj>
 
-<obj class="Variable" id="DUNEDAQ_PARTITION">
- <attr name="name" type="string" val="DUNEDAQ_PARTITION"/>
- <attr name="value" type="string" val="lrSession"/>
-</obj>
-
 <obj class="Variable" id="INFO_SVC">
  <attr name="name" type="string" val="INFO_SVC"/>
  <attr name="value" type="string" val="file://info_{name}_{port}.json"/>
@@ -460,7 +455,7 @@
 
 <obj class="Variable" id="TRACE_FILE">
  <attr name="name" type="string" val="TRACE_FILE"/>
- <attr name="value" type="string" val="/tmp/trace_buffer_{host}_lrSession"/>
+ <attr name="value" type="string" val="/tmp/trace_buffer_{host}_lrSystem"/>
 </obj>
 
 <obj class="VariableSet" id="common-env">
@@ -470,7 +465,6 @@
   <ref class="Variable" id="DUNEDAQ_ERS_INFO"/>
   <ref class="Variable" id="DUNEDAQ_ERS_VERBOSITY_LEVEL"/>
   <ref class="Variable" id="DUNEDAQ_ERS_WARNING"/>
-  <ref class="Variable" id="DUNEDAQ_PARTITION"/>
  </rel>
 </obj>
 

@@ -21,7 +21,7 @@
 #include "confmodel/DetectorStream.hpp"
 #include "confmodel/DetectorToDaqConnection.hpp"
 #include "confmodel/NetworkConnection.hpp"
-#include "confmodel/Session.hpp"
+#include "confmodel/System.hpp"
 #include "dfmessages/TriggerRecord_serialization.hpp"
 #include "logging/Logging.hpp"
 
