@@ -63,7 +63,7 @@
 
 <oks-data>
 
-<info name="" type="" num-of-items="62" oks-format="data" oks-version="862f2957270" created-by="gjc" created-on="thinkpad" creation-time="20231116T105446" last-modified-by="eflumerf" last-modified-on="ironvirt9.IRONDOMAIN.local" last-modification-time="20241023T210032"/>
+<info name="" type="" num-of-items="62" oks-format="data" oks-version="862f2957270" created-by="gjc" created-on="thinkpad" creation-time="20231116T105446" last-modified-by="eflumerf" last-modified-on="ironvirt9.IRONDOMAIN.local" last-modification-time="20241113T195137"/>
 
 <include>
  <file path="schema/confmodel/dunedaq.schema.xml"/>
@@ -90,6 +90,7 @@
  <attr name="td_send_retries" type="s32" val="5"/>
  <attr name="busy_threshold" type="s32" val="2"/>
  <attr name="free_threshold" type="s32" val="1"/>
+ <attr name="busy_interval_ms" type="u32" val="1000"/>
 </obj>
 
 <obj class="DFOModule" id="test">
@@ -272,8 +273,18 @@
  </attr>
 </obj>
 
+<obj class="NetworkConnection" id="dfodec">
+ <attr name="data_type" type="string" val="DFODecision"/>
+ <attr name="send_timeout_ms" type="u32" val="10"/>
+ <attr name="recv_timeout_ms" type="u32" val="10"/>
+ <attr name="connection_type" type="enum" val="kSendRecv"/>
+ <rel name="associated_service" class="Service" id="dfodec"/>
+</obj>
+
 <obj class="NetworkConnection" id="heartbeat">
  <attr name="data_type" type="string" val="DataflowHeartbeat"/>
+ <attr name="send_timeout_ms" type="u32" val="10"/>
+ <attr name="recv_timeout_ms" type="u32" val="10"/>
  <attr name="connection_type" type="enum" val="kSendRecv"/>
  <rel name="associated_service" class="Service" id="heartbeat"/>
 </obj>
@@ -284,12 +295,6 @@
  <attr name="recv_timeout_ms" type="u32" val="10"/>
  <attr name="connection_type" type="enum" val="kSendRecv"/>
  <rel name="associated_service" class="Service" id="trigdec"/>
-</obj>
-
-<obj class="NetworkConnection" id="dfodec">
- <attr name="data_type" type="string" val="DFODecision"/>
- <attr name="connection_type" type="enum" val="kSendRecv"/>
- <rel name="associated_service" class="Service" id="dfodec"/>
 </obj>
 
 <obj class="NetworkConnection" id="triginh">
@@ -357,6 +362,12 @@
  <rel name="controller" class="RCApplication" id="my-controller"/>
 </obj>
 
+<obj class="Service" id="dfodec">
+ <attr name="protocol" type="string" val="tcp"/>
+ <attr name="port" type="u16" val="5052"/>
+ <attr name="eth_device_name" type="string" val="lo"/>
+</obj>
+
 <obj class="Service" id="heartbeat">
  <attr name="protocol" type="string" val="tcp"/>
  <attr name="port" type="u16" val="5053"/>
@@ -366,12 +377,6 @@
 <obj class="Service" id="trigdec">
  <attr name="protocol" type="string" val="tcp"/>
  <attr name="port" type="u16" val="5051"/>
- <attr name="eth_device_name" type="string" val="lo"/>
-</obj>
-
-<obj class="Service" id="dfodec">
- <attr name="protocol" type="string" val="tcp"/>
- <attr name="port" type="u16" val="5052"/>
  <attr name="eth_device_name" type="string" val="lo"/>
 </obj>
 

@@ -11,7 +11,6 @@
 
 #include "dfmodules/opmon/DFOBrokerModule.pb.h"
 
-#include "appfwk/app/Nljs.hpp"
 #include "appmodel/DFOApplication.hpp"
 #include "appmodel/DFOBrokerModule.hpp"
 #include "confmodel/Application.hpp"

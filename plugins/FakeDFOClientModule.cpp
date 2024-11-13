@@ -9,7 +9,6 @@
 #include "FakeDFOClientModule.hpp"
 #include "dfmodules/CommonIssues.hpp"
 
-#include "appfwk/app/Nljs.hpp"
 #include "appmodel/FakeDFOClientModule.hpp"
 #include "confmodel/Connection.hpp"
 #include "iomanager/IOManager.hpp"

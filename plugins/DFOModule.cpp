@@ -324,15 +324,19 @@ DFOModule::generate_opmon_data()
 {
 
   opmon::DFOInfo info;
+
   info.set_heartbeats_received(m_received_heartbeats.exchange(0));
-  info.set_decisions_sent(m_sent_decisions.exchange(0));
   info.set_decisions_received(m_received_decisions.exchange(0));
+  info.set_decisions_sent(m_sent_decisions.exchange(0));
+  info.set_heartbeat_updates(m_heartbeat_updates.exchange(0));
+  
   info.set_waiting_for_decision(m_waiting_for_decision.exchange(0));
   info.set_deciding_destination(m_deciding_destination.exchange(0));
   info.set_forwarding_decision(m_forwarding_decision.exchange(0));
+  
   info.set_waiting_for_heartbeat(m_waiting_for_heartbeat.exchange(0));
   info.set_processing_heartbeat(m_processing_heartbeat.exchange(0));
-  info.set_heartbeat_updates(m_heartbeat_updates.exchange(0));
+  
   publish(std::move(info));
 
   std::lock_guard<std::mutex> guard(m_trigger_mutex);
@@ -353,7 +357,7 @@ DFOModule::receive_dataflow_heartbeat(const dfmessages::DataflowHeartbeat& heart
     m_dataflow_availability[heartbeat.decision_destination] =
       std::make_shared<TriggerRecordBuilderData>(heartbeat.decision_destination, m_busy_threshold, m_free_threshold);
   } else {
-    TLOG() << TRBModuleAppUpdate(ERS_HERE, heartbeat.decision_destination, "Has reconnected");
+    //TLOG() << TRBModuleAppUpdate(ERS_HERE, heartbeat.decision_destination, "Has reconnected");
     auto app_it = m_dataflow_availability.find(heartbeat.decision_destination);
     app_it->second->set_in_error(false);
   }

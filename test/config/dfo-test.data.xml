@@ -63,16 +63,17 @@
 
 <oks-data>
 
-<info name="" type="" num-of-items="73" oks-format="data" oks-version="862f2957270" created-by="gjc" created-on="thinkpad" creation-time="20231207T105549" last-modified-by="eflumerf" last-modified-on="ironvirt9.mshome.net" last-modification-time="20240828T151720"/>
+<info name="" type="" num-of-items="53" oks-format="data" oks-version="862f2957270" created-by="gjc" created-on="thinkpad" creation-time="20231207T105549" last-modified-by="eflumerf" last-modified-on="ironvirt9.IRONDOMAIN.local" last-modification-time="20241113T195137"/>
 
 <include>
  <file path="schema/confmodel/dunedaq.schema.xml"/>
- <file path="config/appmodel/fsm.data.xml"/>
- <file path="test/config/hosts.data.xml"/>
+ <file path="config/daqsystemtest/ccm.data.xml"/>
+ <file path="config/daqsystemtest/fsm.data.xml"/>
+ <file path="config/daqsystemtest/hosts.data.xml"/>
  <file path="schema/appmodel/application.schema.xml"/>
  <file path="schema/appmodel/trigger.schema.xml"/>
- <file path="config/appmodel/connections.data.xml"/>
- <file path="config/appmodel/moduleconfs.data.xml"/>
+ <file path="config/daqsystemtest/connections.data.xml"/>
+ <file path="config/daqsystemtest/moduleconfs.data.xml"/>
 </include>
 
 <comments>
@@ -81,34 +82,6 @@
  <comment creation-time="20240826T201110" created-by="eflumerf" created-on="ironvirt9.mshome.net" author="eflumerf" text="Fix client TD queue"/>
 </comments>
 
-
-<obj class="ConnectionService" id="local-connection-server">
- <attr name="application_name" type="string" val="echo"/>
- <attr name="commandline_parameters" type="string">
-  <data val="Process PID $$;"/>
-  <data val="trap &apos;pkill -INT -P $$&apos; EXIT;"/>
-  <data val="gunicorn -b 0.0.0.0:5000 --workers=1 --worker-class=gthread --threads=2 --timeout 5000000000 --log-level=debug connection-service.connection-flask:app"/>
- </attr>
- <attr name="threads" type="u16" val="1"/>
- <rel name="runs_on" class="VirtualHost" id="vlocalhost"/>
- <rel name="exposes_service">
-  <ref class="Service" id="local-connectivity-service"/>
- </rel>
-</obj>
-
-<obj class="CustomTCMakerConf" id="cstm-tc-generator">
- <attr name="timestamp_method" type="enum" val="kTimeSync"/>
- <attr name="template_for" type="class" val="CustomTCMaker"/>
- <attr name="trigger_types" type="u32">
-  <data val="3"/>
-  <data val="7"/>
- </attr>
- <attr name="trigger_intervals" type="u32">
-  <data val="6250000"/>
-  <data val="6250000"/>
- </attr>
- <attr name="clock_frequency_hz" type="u32" val="62500000"/>
-</obj>
 
 <obj class="DFHWConf" id="dfhw-01">
  <rel name="uses">
@@ -122,33 +95,26 @@
  <rel name="exposes_service">
   <ref class="Service" id="dfo-01_control"/>
  </rel>
+ <rel name="opmon_conf" class="OpMonConf" id="slow-all-monitoring"/>
  <rel name="network_rules">
   <ref class="NetworkConnectionRule" id="td-dfo-net-rule"/>
   <ref class="NetworkConnectionRule" id="ti-net-rule"/>
-  <ref class="NetworkConnectionRule" id="df-heartbeat-net-rule"/>
+  <ref class="NetworkConnectionRule" id="df-hb-net-rule"/>
  </rel>
  <rel name="dfo" class="DFOConf" id="dfoconf-02"/>
 </obj>
 
-
-  <obj class="DFOConf" id="dfoconf-02">
-    <attr name="general_queue_timeout_ms" type="u32" val="100"/>
-    <attr name="stop_timeout_ms" type="u32" val="100"/>
-    <attr name="td_send_retries" type="s32" val="5"/>
-    <attr name="busy_threshold" type="s32" val="20"/>
-    <attr name="free_threshold" type="s32" val="10"/>
-  </obj>
-  
 <obj class="DFOApplication" id="dfo-02">
  <attr name="application_name" type="string" val="daq_application"/>
  <rel name="runs_on" class="VirtualHost" id="vlocalhost"/>
  <rel name="exposes_service">
   <ref class="Service" id="dfo-02_control"/>
  </rel>
+ <rel name="opmon_conf" class="OpMonConf" id="slow-all-monitoring"/>
  <rel name="network_rules">
   <ref class="NetworkConnectionRule" id="td-dfo-net-rule"/>
   <ref class="NetworkConnectionRule" id="ti-net-rule"/>
-  <ref class="NetworkConnectionRule" id="df-heartbeat-net-rule"/>
+  <ref class="NetworkConnectionRule" id="df-hb-net-rule"/>
  </rel>
  <rel name="dfo" class="DFOConf" id="dfoconf-02"/>
 </obj>
@@ -161,28 +127,20 @@
  <rel name="initial_active_dfo" class="DFOApplication" id="dfo-01"/>
 </obj>
 
-<obj class="DataHandlerConf" id="def-ta-handler">
- <attr name="template_for" type="class" val="TriggerDataHandlerModule"/>
- <attr name="input_data_type" type="string" val="TriggerActivity"/>
- <attr name="generate_timesync" type="bool" val="0"/>
- <rel name="request_handler" class="RequestHandler" id="def-ta-request-handler"/>
- <rel name="latency_buffer" class="LatencyBuffer" id="def-latency-buf"/>
- <rel name="data_processor" class="TADataProcessor" id="def-ta-processor"/>
-</obj>
-
-<obj class="DataHandlerConf" id="def-tc-handler">
- <attr name="template_for" type="class" val="TriggerDataHandlerModule"/>
- <attr name="input_data_type" type="string" val="TriggerCandidate"/>
- <attr name="generate_timesync" type="bool" val="0"/>
- <rel name="request_handler" class="RequestHandler" id="def-tc-request-handler"/>
- <rel name="latency_buffer" class="LatencyBuffer" id="def-latency-buf"/>
- <rel name="data_processor" class="TCDataProcessor" id="def-tc-processor"/>
+<obj class="DFOConf" id="dfoconf-02">
+ <attr name="general_queue_timeout_ms" type="u32" val="100"/>
+ <attr name="stop_timeout_ms" type="u32" val="100"/>
+ <attr name="td_send_retries" type="s32" val="5"/>
+ <attr name="busy_threshold" type="s32" val="20"/>
+ <attr name="free_threshold" type="s32" val="10"/>
+ <attr name="busy_interval_ms" type="u32" val="1000"/>
 </obj>
 
 <obj class="DetectorConfig" id="dummy-detector">
  <attr name="tpg_channel_map" type="string" val="PD2HDChannelMap"/>
  <attr name="clock_speed_hz" type="u32" val="62500000"/>
  <attr name="op_env" type="string" val="test"/>
+ <attr name="offline_data_stream" type="string" val="cosmics"/>
 </obj>
 
 <obj class="FakeDFOClientConf" id="client-01">
@@ -196,6 +154,7 @@
  <rel name="exposes_service">
   <ref class="Service" id="df-01_control"/>
  </rel>
+ <rel name="opmon_conf" class="OpMonConf" id="slow-all-monitoring"/>
  <rel name="source_id" class="SourceIDConf" id="srcid-df-01"/>
  <rel name="queue_rules">
   <ref class="QueueConnectionRule" id="token-queue-rule"/>
@@ -203,7 +162,7 @@
  </rel>
  <rel name="network_rules">
   <ref class="NetworkConnectionRule" id="dfo-decision-net-rule"/>
-  <ref class="NetworkConnectionRule" id="df-heartbeat-net-rule"/>
+  <ref class="NetworkConnectionRule" id="df-hb-net-rule"/>
  </rel>
  <rel name="broker" class="DFOBrokerConf" id="broker-01"/>
  <rel name="dfoclient" class="FakeDFOClientConf" id="client-01"/>
@@ -215,6 +174,7 @@
  <rel name="exposes_service">
   <ref class="Service" id="df-02_control"/>
  </rel>
+ <rel name="opmon_conf" class="OpMonConf" id="slow-all-monitoring"/>
  <rel name="source_id" class="SourceIDConf" id="srcid-df-02"/>
  <rel name="queue_rules">
   <ref class="QueueConnectionRule" id="token-queue-rule"/>
@@ -222,7 +182,7 @@
  </rel>
  <rel name="network_rules">
   <ref class="NetworkConnectionRule" id="dfo-decision-net-rule"/>
-  <ref class="NetworkConnectionRule" id="df-heartbeat-net-rule"/>
+  <ref class="NetworkConnectionRule" id="df-hb-net-rule"/>
  </rel>
  <rel name="broker" class="DFOBrokerConf" id="broker-01"/>
  <rel name="dfoclient" class="FakeDFOClientConf" id="client-01"/>
@@ -234,6 +194,7 @@
  <rel name="exposes_service">
   <ref class="Service" id="df-03_control"/>
  </rel>
+ <rel name="opmon_conf" class="OpMonConf" id="slow-all-monitoring"/>
  <rel name="source_id" class="SourceIDConf" id="srcid-df-03"/>
  <rel name="queue_rules">
   <ref class="QueueConnectionRule" id="token-queue-rule"/>
@@ -241,19 +202,12 @@
  </rel>
  <rel name="network_rules">
   <ref class="NetworkConnectionRule" id="dfo-decision-net-rule"/>
-  <ref class="NetworkConnectionRule" id="df-heartbeat-net-rule"/>
+  <ref class="NetworkConnectionRule" id="df-hb-net-rule"/>
  </rel>
  <rel name="broker" class="DFOBrokerConf" id="broker-01"/>
  <rel name="dfoclient" class="FakeDFOClientConf" id="client-01"/>
 </obj>
 
-  <obj class="MLTConf" id="mlt-conf-01">
-    <attr name="td_out_of_timeout" type="bool" val="1"/>
-    <attr name="buffer_timeout" type="u32" val="1"/>
-    <attr name="td_readout_limit" type="u32" val="1"/>
-    <rel name="initial_active_dfo" class="DFOApplication" id="dfo-01"/>
-  </obj>
-  
 <obj class="MLTApplication" id="mlt">
  <attr name="application_name" type="string" val="daq_application"/>
  <rel name="runs_on" class="VirtualHost" id="vlocalhost"/>
@@ -263,6 +217,7 @@
   <ref class="Service" id="dataRequests"/>
   <ref class="Service" id="mlt_control"/>
  </rel>
+ <rel name="opmon_conf" class="OpMonConf" id="slow-all-monitoring"/>
  <rel name="source_id" class="SourceIDConf" id="tc-srcid-1"/>
  <rel name="queue_rules">
   <ref class="QueueConnectionRule" id="tc-queue-rule"/>
@@ -283,32 +238,10 @@
  </rel>
 </obj>
 
-<obj class="OpMonService" id="cern-opmon-application-service">
- <rel name="runs_on" class="VirtualHost" id="kafka-cern-vhost"/>
- <rel name="exposes_service">
-  <ref class="Service" id="daq-k8s-opmon-service"/>
- </rel>
-</obj>
-
-<obj class="OpMonService" id="local-opmon-application-service">
- <rel name="runs_on" class="VirtualHost" id="vlocalhost"/>
- <rel name="exposes_service">
-  <ref class="Service" id="local-opmon-service"/>
- </rel>
-</obj>
-
-<obj class="OpMonService" id="pocket-opmon-application-service">
- <attr name="application_name" type="string" val="sh"/>
- <attr name="commandline_parameters" type="string">
-  <data val="-c"/>
-  <data val="echo Not starting kafka/grafana/postgres/influx"/>
-  <data val="&amp;&amp;"/>
-  <data val="sleep 10000"/>
- </attr>
- <rel name="runs_on" class="VirtualHost" id="kafka-pocket-vhost"/>
- <rel name="exposes_service">
-  <ref class="Service" id="daq-k8s-opmon-service"/>
- </rel>
+<obj class="MLTConf" id="mlt-conf-01">
+ <attr name="template_for" type="class" val="MLTModule"/>
+ <attr name="latency_monitoring" type="bool" val="1"/>
+ <rel name="initial_active_dfo" class="DFOApplication" id="dfo-01"/>
 </obj>
 
 <obj class="QueueConnectionRule" id="client-td-queue-rule">
@@ -322,16 +255,8 @@
  <rel name="exposes_service">
   <ref class="Service" id="df-controller_control"/>
  </rel>
+ <rel name="opmon_conf" class="OpMonConf" id="slow-all-monitoring"/>
  <rel name="fsm" class="FSMconfiguration" id="FSMconfiguration_noAction"/>
-</obj>
-
-<obj class="RCApplication" id="root-controller">
- <attr name="application_name" type="string" val="drunc-controller"/>
- <rel name="runs_on" class="VirtualHost" id="vlocalhost"/>
- <rel name="exposes_service">
-  <ref class="Service" id="root-controller_control"/>
- </rel>
- <rel name="fsm" class="FSMconfiguration" id="fsmConf-test"/>
 </obj>
 
 <obj class="RCApplication" id="trg-controller">
@@ -340,33 +265,8 @@
  <rel name="exposes_service">
   <ref class="Service" id="trg-controller_control"/>
  </rel>
+ <rel name="opmon_conf" class="OpMonConf" id="slow-all-monitoring"/>
  <rel name="fsm" class="FSMconfiguration" id="FSMconfiguration_noAction"/>
-</obj>
-
-<obj class="RandomTCMakerConf" id="random-tc-generator">
- <attr name="timestamp_method" type="enum" val="kTimeSync"/>
- <attr name="template_for" type="class" val="RandomTCMakerModule"/>
- <attr name="trigger_interval_ticks" type="u32" val="312500"/>
- <attr name="clock_frequency_hz" type="u32" val="62500000"/>
- <attr name="time_distribution" type="enum" val="kUniform"/>
-</obj>
-
-<obj class="RequestHandler" id="def-ta-request-handler">
- <attr name="handler_threads" type="u16" val="1"/>
- <attr name="request_timeout" type="u32" val="10000"/>
- <attr name="pop_limit_pct" type="float" val="0.5"/>
- <attr name="pop_size_pct" type="float" val="0.8"/>
- <attr name="warn_on_timeout" type="bool" val="1"/>
- <attr name="warn_on_empty_buffer" type="bool" val="1"/>
-</obj>
-
-<obj class="RequestHandler" id="def-tc-request-handler">
- <attr name="handler_threads" type="u16" val="1"/>
- <attr name="request_timeout" type="u32" val="10000"/>
- <attr name="pop_limit_pct" type="float" val="0.5"/>
- <attr name="pop_size_pct" type="float" val="0.8"/>
- <attr name="warn_on_timeout" type="bool" val="1"/>
- <attr name="warn_on_empty_buffer" type="bool" val="1"/>
 </obj>
 
 <obj class="Segment" id="df-segment">
@@ -437,11 +337,6 @@
  <attr name="port" type="u16" val="5701"/>
 </obj>
 
-<obj class="Service" id="local-connectivity-service">
- <attr name="protocol" type="string" val="http"/>
- <attr name="port" type="u16" val="5000"/>
-</obj>
-
 <obj class="Service" id="local-opmon-service">
  <attr name="protocol" type="string" val="file"/>
  <attr name="port" type="u16" val="0"/>
@@ -451,11 +346,6 @@
 <obj class="Service" id="mlt_control">
  <attr name="protocol" type="string" val="rest"/>
  <attr name="port" type="u16" val="5702"/>
-</obj>
-
-<obj class="Service" id="root-controller_control">
- <attr name="protocol" type="string" val="grpc"/>
- <attr name="port" type="u16" val="3333"/>
 </obj>
 
 <obj class="Service" id="tc-buffer-1_control">
@@ -479,10 +369,9 @@
 </obj>
 
 <obj class="Session" id="dfo-test">
- <attr name="use_connectivity_server" type="bool" val="1"/>
- <attr name="connectivity_service_interval_ms" type="u32" val="2000"/>
  <attr name="data_request_timeout_ms" type="u32" val="1000"/>
  <attr name="data_rate_slowdown_factor" type="u32" val="1"/>
+ <attr name="controller_log_level" type="enum" val="INFO"/>
  <rel name="environment">
   <ref class="Variable" id="session-env-session-name-0"/>
   <ref class="Variable" id="session-env-session-name-1"/>
@@ -499,9 +388,9 @@
  <rel name="segment" class="Segment" id="root-segment"/>
  <rel name="infrastructure_applications">
   <ref class="ConnectionService" id="local-connection-server"/>
-  <ref class="OpMonService" id="local-opmon-application-service"/>
  </rel>
  <rel name="detector_configuration" class="DetectorConfig" id="dummy-detector"/>
+ <rel name="opmon_uri" class="OpMonURI" id="local-opmon-uri"/>
 </obj>
 
 <obj class="SourceIDConf" id="hsi-tc-srcid-1">
@@ -543,70 +432,6 @@
  <attr name="storage" type="u32" val="1000"/>
 </obj>
 
-<obj class="TADataProcessor" id="def-ta-processor">
- <attr name="queue_sizes" type="u32" val="10000"/>
- <attr name="thread_names_prefix" type="string" val="proc-"/>
- <attr name="mask_processing" type="bool" val="0"/>
- <attr name="print_ta_info" type="bool" val="0"/>
- <rel name="algorithms">
-  <ref class="TCMakerPrescaleAlgorithm" id="tc-pass-through-algo"/>
- </rel>
-</obj>
-
-<obj class="TCDataProcessor" id="def-tc-processor">
- <attr name="queue_sizes" type="u32" val="10000"/>
- <attr name="thread_names_prefix" type="string" val="mlt_"/>
- <attr name="mask_processing" type="bool" val="0"/>
- <attr name="hsi_trigger_type_passthrough" type="bool" val="0"/>
- <attr name="merge_overlapping_tcs" type="bool" val="1"/>
- <attr name="td_out_of_timeout" type="bool" val="1"/>
- <attr name="buffer_timeout" type="u32" val="1"/>
- <attr name="td_readout_limit" type="u32" val="1"/>
- <attr name="use_bitwords" type="bool" val="0"/>
- <attr name="use_roi_readout" type="bool" val="0"/>
- <attr name="use_readout_map" type="bool" val="0"/>
- <rel name="tc_readout_map">
-  <ref class="TCReadoutMap" id="def-tc-map"/>
-  <ref class="TCReadoutMap" id="def-hsi-tc-map"/>
- </rel>
-</obj>
-
-<obj class="TCMakerADCSimpleWindowAlgorithm" id="tc-adcwindow-algo">
- <attr name="prescale" type="u32" val="100"/>
-</obj>
-
-<obj class="TCMakerPrescaleAlgorithm" id="tc-pass-through-algo">
- <attr name="prescale" type="u32" val="100"/>
-</obj>
-
-<obj class="TCReadoutMap" id="def-hsi-tc-map">
- <attr name="candidate_type" type="u32" val="1"/>
- <attr name="time_before" type="u32" val="3000"/>
- <attr name="time_after" type="u32" val="1001"/>
-</obj>
-
-<obj class="TCReadoutMap" id="def-tc-map">
- <attr name="time_before" type="u32" val="3000"/>
- <attr name="time_after" type="u32" val="1001"/>
-</obj>
-
-<obj class="TimingTriggerOffsetMap" id="ttcm-off-0">
- <attr name="time_before" type="u32" val="1000"/>
- <attr name="time_after" type="u32" val="1000"/>
-</obj>
-
-<obj class="TimingTriggerOffsetMap" id="ttcm-off-1">
- <attr name="signal_type" type="u32" val="1"/>
- <attr name="time_before" type="u32" val="1000"/>
- <attr name="time_after" type="u32" val="1000"/>
-</obj>
-
-<obj class="TimingTriggerOffsetMap" id="ttcm-off-2">
- <attr name="signal_type" type="u32" val="2"/>
- <attr name="time_before" type="u32" val="1000"/>
- <attr name="time_after" type="u32" val="1000"/>
-</obj>
-
 <obj class="TriggerApplication" id="tc-maker-1">
  <attr name="application_name" type="string" val="daq_application"/>
  <rel name="runs_on" class="VirtualHost" id="vlocalhost"/>
@@ -615,6 +440,7 @@
   <ref class="Service" id="triggerActivities"/>
   <ref class="Service" id="dataRequests"/>
  </rel>
+ <rel name="opmon_conf" class="OpMonConf" id="slow-all-monitoring"/>
  <rel name="source_id" class="SourceIDConf" id="ta-srcid-1"/>
  <rel name="queue_rules">
   <ref class="QueueConnectionRule" id="ta-queue-rule"/>
