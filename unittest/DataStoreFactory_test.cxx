@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_CASE(invalid_request)
 {
 
   // we want to pass an invalid DataStore type and see if we get an exception
-  BOOST_CHECK_THROW(make_data_store("dummy", "dummy", nullptr), DataStoreCreationFailed);
+  BOOST_CHECK_THROW(make_data_store("dummy", "dummy", nullptr, "dummy_writer"), DataStoreCreationFailed);
 
 }
 
@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(valid_request)
   conf["name"] = "test" ;
 
   // we want to ask for a valid Data Store type
-  auto ds = make_data_store( "TrashCanDataStore", conf ) ;
+  auto ds = make_data_store( "TrashCanDataStore", conf, "test" ) ;
 
   // and we want to check if we created something valid
   BOOST_TEST( ds.get() ) ;

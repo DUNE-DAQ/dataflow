@@ -61,6 +61,7 @@ TPStreamWriterModule::init(std::shared_ptr<appfwk::ModuleConfiguration> mcfg)
   assert(mdal->get_inputs().size() == 1);
   m_module_configuration = mcfg;
   m_tpset_source = iomanager::IOManager::get()->get_receiver<trigger::TPSet>(mdal->get_inputs()[0]->UID());
+  m_writer_identifier = mdal->get_writer_identifier();
   m_tp_writer_conf = mdal->get_configuration();
   m_source_id = mdal->get_source_id();
   TLOG_DEBUG(TLVL_ENTER_EXIT_METHODS) << get_name() << ": Exiting init() method";
@@ -70,9 +71,15 @@ void
 TPStreamWriterModule::generate_opmon_data() {
   opmon::TPStreamWriterInfo info;
 
-  info.set_tpset_received(m_tpset_received.exchange(0));
-  info.set_tp_received( m_tp_received.exchange(0) );
-  info.set_tp_written(m_tp_written.exchange(0));
+  info.set_heartbeat_tpsets_received(m_heartbeat_tpsets.exchange(0));
+  info.set_tpsets_with_tps_received(m_tpsets_with_tps.exchange(0));
+  info.set_tps_received(m_tps_received.exchange(0));
+  info.set_tps_written(m_tps_written.exchange(0));
+  info.set_total_tps_received(m_total_tps_received.load());
+  info.set_total_tps_written(m_total_tps_written.load());
+  info.set_tardy_timeslice_max_seconds(m_tardy_timeslice_max_seconds.exchange(0.0));
+  info.set_timeslices_written(m_timeslices_written.exchange(0));
+  info.set_bytes_output(m_bytes_output.exchange(0));
 
   publish(std::move(info));
 }
@@ -82,12 +89,16 @@ TPStreamWriterModule::do_conf(const data_t& )
 {
   TLOG_DEBUG(TLVL_ENTER_EXIT_METHODS) << get_name() << ": Entering do_conf() method";
   m_accumulation_interval_ticks = m_tp_writer_conf->get_tp_accumulation_interval();
+  m_accumulation_inactivity_time_before_write =
+    std::chrono::milliseconds(static_cast<int>(1000*m_tp_writer_conf->get_tp_accumulation_inactivity_time_before_write_sec()));
+  m_warn_user_when_tardy_tps_are_discarded = m_tp_writer_conf->get_warn_user_when_tardy_tps_are_discarded();
+  m_accumulation_interval_seconds = ((double) m_accumulation_interval_ticks) / 62500000.0;
 
   // create the DataStore instance here
   try {
     m_data_writer = make_data_store(m_tp_writer_conf->get_data_store_params()->get_type(),
                                     m_tp_writer_conf->get_data_store_params()->UID(),
-                                    m_module_configuration);
+                                    m_module_configuration, m_writer_identifier);
     register_node("data_writer", m_data_writer);
   } catch (const ers::Issue& excpt) {
     throw UnableToConfigure(ERS_HERE, get_name(), excpt);
@@ -107,13 +118,15 @@ TPStreamWriterModule::do_start(const nlohmann::json& payload)
   TLOG_DEBUG(TLVL_ENTER_EXIT_METHODS) << get_name() << ": Entering do_start() method";
   rcif::cmd::StartParams start_params = payload.get<rcif::cmd::StartParams>();
   m_run_number = start_params.run;
+  m_total_tps_received.store(0);
+  m_total_tps_written.store(0);
 
   // 06-Mar-2022, KAB: added this call to allow DataStore to prepare for the run.
   // I've put this call fairly early in this method because it could throw an
   // exception and abort the run start.  And, it seems sensible to avoid starting
   // threads, etc. if we throw an exception.
   try {
-    m_data_writer->prepare_for_run(m_run_number);
+    m_data_writer->prepare_for_run(m_run_number, (start_params.production_vs_test == "TEST"));
   } catch (const ers::Issue& excpt) {
     throw UnableToStart(ERS_HERE, get_name(), m_run_number, excpt);
   }
@@ -165,39 +178,64 @@ TPStreamWriterModule::do_work(std::atomic<bool>& running_flag)
   daqdataformats::timestamp_t first_timestamp = 0;
   daqdataformats::timestamp_t last_timestamp = 0;
 
-  TPBundleHandler tp_bundle_handler(m_accumulation_interval_ticks, m_run_number, std::chrono::seconds(1));
+  TPBundleHandler tp_bundle_handler(m_accumulation_interval_ticks, m_run_number, m_accumulation_inactivity_time_before_write);
 
-  while (running_flag.load()) {
+  bool possible_pending_data = true;
+  size_t largest_timeslice_number = 0;
+  while (running_flag.load() || possible_pending_data) {
     trigger::TPSet tpset;
     try {
       tpset = m_tpset_source->receive(m_queue_timeout);
       ++n_tpset_received;
-      ++m_tpset_received;
-      m_tp_received += tpset.objects.size();
+
+      if (tpset.type == trigger::TPSet::Type::kHeartbeat) {
+        ++m_heartbeat_tpsets;
+        continue;
+      }
+
+      TLOG_DEBUG(21) << "Number of TPs in TPSet is " << tpset.objects.size() << ", Source ID is " << tpset.origin
+                     << ", seqno is " << tpset.seqno << ", start timestamp is " << tpset.start_time << ", run number is "
+                     << tpset.run_number << ", slice id is " << (tpset.start_time / m_accumulation_interval_ticks);
+
+      // 30-Mar-2022, KAB: added test for matching run number.  This is to avoid getting
+      // confused by TPSets that happen to be leftover in transit from one run to the
+      // next (which we have observed in v2.10.x systems).
+      if (tpset.run_number != m_run_number) {
+        TLOG_DEBUG(22) << "Discarding TPSet with invalid run number " << tpset.run_number << " (current is "
+                       << m_run_number << "),  Source ID is " << tpset.origin << ", seqno is " << tpset.seqno;
+        continue;
+      }
+      ++m_tpsets_with_tps;
+
+      size_t num_tps_in_tpset = tpset.objects.size();
+      tp_bundle_handler.add_tpset(std::move(tpset));
+      m_tps_received += num_tps_in_tpset;
+      m_total_tps_received += num_tps_in_tpset;
+      possible_pending_data = true;
+    } catch (iomanager::ConnectionInstanceNotFound&) {
+      // sleep for a little bit; and indicate no pending data, in case we never get a connection
+      // and the run ends - we don't want to believe that there is pending data in that case.
+      usleep(1000 * m_queue_timeout.count());
+      possible_pending_data = false;
     } catch (iomanager::TimeoutExpired&) {
-      continue;
+      // nothing special to do here, we'll simply let the rest of the code in this
+      // while loop do its job
     }
 
-    if (tpset.type == trigger::TPSet::Type::kHeartbeat)
-	    continue;
-
-    TLOG_DEBUG(21) << "Number of TPs in TPSet is " << tpset.objects.size() << ", Source ID is " << tpset.origin
-                   << ", seqno is " << tpset.seqno << ", start timestamp is " << tpset.start_time << ", run number is "
-                   << tpset.run_number << ", slice id is " << (tpset.start_time / m_accumulation_interval_ticks);
-
-    // 30-Mar-2022, KAB: added test for matching run number.  This is to avoid getting
-    // confused by TPSets that happen to be leftover in transit from one run to the
-    // next (which we have observed in v2.10.x systems).
-    if (tpset.run_number != m_run_number) {
-      TLOG_DEBUG(22) << "Discarding TPSet with invalid run number " << tpset.run_number << " (current is "
-                     << m_run_number << "),  Source ID is " << tpset.origin << ", seqno is " << tpset.seqno;
-      continue;
+    std::vector<std::unique_ptr<daqdataformats::TimeSlice>> list_of_timeslices;
+    if (running_flag.load()) {
+      list_of_timeslices = tp_bundle_handler.get_properly_aged_timeslices();
+    } else {
+      list_of_timeslices = tp_bundle_handler.get_all_remaining_timeslices();
+      possible_pending_data = false;
     }
 
-    tp_bundle_handler.add_tpset(std::move(tpset));
+    // keep track of the largest timeslice number (for reporting on tardy ones)
+    for (auto& timeslice_ptr : list_of_timeslices) {
+      largest_timeslice_number = std::max(timeslice_ptr->get_header().timeslice_number, largest_timeslice_number);
+    }
 
-    std::vector<std::unique_ptr<daqdataformats::TimeSlice>> list_of_timeslices =
-      tp_bundle_handler.get_properly_aged_timeslices();
+    // attempt to write out each TimeSlice
     for (auto& timeslice_ptr : list_of_timeslices) {
       daqdataformats::SourceID sid(daqdataformats::SourceID::Subsystem::kTRBuilder, m_source_id);
       timeslice_ptr->set_element_id(sid);
@@ -209,12 +247,11 @@ TPStreamWriterModule::do_work(std::atomic<bool>& running_flag)
         should_retry = false;
         try {
           m_data_writer->write(*timeslice_ptr);
-	  size_t n_tp = 0;
-	  const auto & frags = timeslice_ptr -> get_fragments_ref();
-	  for ( const auto & f_ptr :  frags ) {
-	    n_tp += f_ptr -> get_data_size()/sizeof(trgdataformats::TriggerPrimitive);
-	  }
-	  m_tp_written += n_tp;
+	  ++m_timeslices_written;
+	  m_bytes_output += timeslice_ptr->get_total_size_bytes();
+          size_t number_of_tps_written = (timeslice_ptr->get_sum_of_fragment_payload_sizes() / sizeof(trgdataformats::TriggerPrimitive));
+          m_tps_written += number_of_tps_written;
+          m_total_tps_written += number_of_tps_written;
         } catch (const RetryableDataStoreProblem& excpt) {
           should_retry = true;
           ers::error(DataWritingProblem(ERS_HERE,
@@ -227,6 +264,24 @@ TPStreamWriterModule::do_work(std::atomic<bool>& running_flag)
           }
           usleep(retry_wait_usec);
           retry_wait_usec *= 2;
+        } catch (const IgnorableDataStoreProblem& excpt) {
+          int timeslice_number_diff = largest_timeslice_number - timeslice_ptr->get_header().timeslice_number;
+          double seconds_too_late = m_accumulation_interval_seconds * timeslice_number_diff;
+          m_tardy_timeslice_max_seconds = std::max(m_tardy_timeslice_max_seconds.load(), seconds_too_late);
+          if (m_warn_user_when_tardy_tps_are_discarded) {
+            std::ostringstream sid_list;
+            bool first_frag = true;
+            for (auto const& frag_ptr : timeslice_ptr->get_fragments_ref()) {
+              if (first_frag) {first_frag = false;}
+              else {sid_list << ",";}
+              sid_list << frag_ptr->get_element_id().to_string();
+            }
+            ers::warning(TardyTPsDiscarded(ERS_HERE,
+                                           get_name(),
+                                           sid_list.str(),
+                                           timeslice_ptr->get_header().timeslice_number,
+                                           seconds_too_late));
+          }
         } catch (const std::exception& excpt) {
           ers::error(DataWritingProblem(ERS_HERE,
                                         get_name(),

@@ -11,7 +11,6 @@
 
 #include "dfmodules/opmon/DFOModule.pb.h"
 
-#include "appfwk/app/Nljs.hpp"
 #include "appmodel/DFOModule.hpp"
 #include "confmodel/Application.hpp"
 #include "confmodel/Connection.hpp"

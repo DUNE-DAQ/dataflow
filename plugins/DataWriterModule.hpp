@@ -62,6 +62,8 @@ private:
   // Configuration
   std::shared_ptr<appfwk::ModuleConfiguration> m_module_configuration;
   const appmodel::DataWriterConf* m_data_writer_conf;
+  std::string m_writer_identifier;
+
   // size_t m_sleep_msec_while_running;
   std::chrono::milliseconds m_queue_timeout;
   bool m_data_storage_is_enabled;

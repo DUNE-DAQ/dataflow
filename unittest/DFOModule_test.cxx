@@ -9,7 +9,6 @@
 
 #include "DFOModule.hpp"
 
-#include "appfwk/app/Nljs.hpp"
 #include "dfmessages/DataflowHeartbeat.hpp"
 #include "dfmessages/DFODecision.hpp"
 #include "dfmessages/TriggerInhibit.hpp"
@@ -47,7 +46,7 @@ struct CfgFixture
     std::string sessionName = "partition_name";
     cfgMgr = std::make_shared<dunedaq::appfwk::ConfigurationManager>(oksConfig, appName, sessionName);
     modCfg  = std::make_shared<dunedaq::appfwk::ModuleConfiguration>(cfgMgr);
-    get_iomanager()->configure(modCfg->queues(), modCfg->networkconnections(), false, std::chrono::milliseconds(100), opmgr);
+    get_iomanager()->configure(sessionName, modCfg->queues(), modCfg->networkconnections(), nullptr, opmgr);
   }
   ~CfgFixture() {
     get_iomanager()->reset();

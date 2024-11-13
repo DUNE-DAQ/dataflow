@@ -4,9 +4,17 @@ package dunedaq.dfmodules.opmon;
 
 message TPStreamWriterInfo {
 
-  uint64 tpset_received = 1;  // incremental
-  uint64 tp_received  = 10;   // incremental
-  uint64 tp_written   = 11;   // incremental
+  uint64 heartbeat_tpsets_received = 1; // incremental count of heartbeat TPSets received
+  uint64 tpsets_with_tps_received = 2;  // incremental count of TPSets received that contain TPs
+
+  uint64 tps_received = 11;       // incremental count of TPs that have been received
+  uint64 tps_written = 12;        // incremental count of TPs that have been written out
+  uint64 total_tps_received = 16; // count of TPs that have been received in the current run
+  uint64 total_tps_written = 17;  // count of TPs that have been written out in the current run
+
+uint64 tardy_timeslice_max_seconds = 21; //incremental max amount of time that a TimeSlice was tardy
+
+  uint64 timeslices_written = 31; // incremental count of TimeSlices that have been written out
+  uint64 bytes_output = 32;       // incremental number of bytes that have been written out
 
 }
-

@@ -47,9 +47,10 @@
 #define DEFINE_DUNE_DATA_STORE(klass)                                                                                  \
   EXTERN_C_FUNC_DECLARE_START                                                                                          \
   std::shared_ptr<dunedaq::dfmodules::DataStore> make(const std::string& name,                                         \
-                                                      std::shared_ptr<dunedaq::appfwk::ModuleConfiguration> mcfg) \
+                                                      std::shared_ptr<dunedaq::appfwk::ModuleConfiguration> mcfg,      \
+		  				      const std::string& writer_name	)                              \
   {                                                                                                                    \
-    return std::shared_ptr<dunedaq::dfmodules::DataStore>(new klass(name, mcfg));                                      \
+    return std::shared_ptr<dunedaq::dfmodules::DataStore>(new klass(name, mcfg, writer_name));                         \
   }                                                                                                                    \
   }
 
@@ -73,6 +74,17 @@ ERS_DECLARE_ISSUE(dfmodules,                                                    
  */
 ERS_DECLARE_ISSUE(dfmodules,
                   RetryableDataStoreProblem,
+                  "Module " << mod_name << ": A problem was encountered when " << description,
+                  ((std::string)mod_name)((std::string)description))
+/// @endcond LCOV_EXCL_STOP
+
+/**
+ * @brief An ERS Issue for DataStore problems in which it is
+ * reasonable to skip any warning or error message.
+ * @cond Doxygen doesn't like ERS macros LCOV_EXCL_START
+ */
+ERS_DECLARE_ISSUE(dfmodules,
+                  IgnorableDataStoreProblem,
                   "Module " << mod_name << ": A problem was encountered when " << description,
                   ((std::string)mod_name)((std::string)description))
 /// @endcond LCOV_EXCL_STOP
@@ -123,7 +135,8 @@ public:
    * This allows DataStore instances to make any preparations that will be
    * beneficial in advance of the first data blocks being written or read.
    */
-  virtual void prepare_for_run(daqdataformats::run_number_t run_number) = 0;
+  virtual void prepare_for_run(daqdataformats::run_number_t run_number,
+                               bool run_is_for_test_purposes) = 0;
 
   /**
    * @brief Informs the DataStore that writes or reads of data blocks associated
@@ -150,13 +163,14 @@ private:
 inline std::shared_ptr<DataStore>
 make_data_store(const std::string& type,
                 const std::string& name,
-                std::shared_ptr<dunedaq::appfwk::ModuleConfiguration> mcfg)
+                std::shared_ptr<dunedaq::appfwk::ModuleConfiguration> mcfg,
+		const std::string& writer_identifier)
 {
   static cet::BasicPluginFactory bpf("duneDataStore", "make"); // NOLINT
 
   std::shared_ptr<DataStore> ds;
   try {
-    ds = bpf.makePlugin<std::shared_ptr<DataStore>>(type, name, mcfg);
+    ds = bpf.makePlugin<std::shared_ptr<DataStore>>(type, name, mcfg, writer_identifier);
   } catch (const cet::exception& cexpt) {
     throw DataStoreCreationFailed(ERS_HERE, type, name, cexpt);
   }

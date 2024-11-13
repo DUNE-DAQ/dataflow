@@ -12,14 +12,15 @@
 #include "appmodel/NetworkConnectionDescriptor.hpp"
 #include "appmodel/NetworkConnectionRule.hpp"
 #include "appmodel/ReadoutApplication.hpp"
-#include "appmodel/TriggerApplication.hpp"
-#include "appmodel/TRBModule.hpp"
 #include "appmodel/SourceIDConf.hpp"
-#include "appfwk/app/Nljs.hpp"
+#include "appmodel/SourceIDToNetworkConnection.hpp"
+#include "appmodel/TRBModule.hpp"
+#include "appmodel/TriggerApplication.hpp"
 #include "confmodel/Application.hpp"
-#include "confmodel/DetectorToDaqConnection.hpp"
-#include "confmodel/DetectorStream.hpp"
 #include "confmodel/Connection.hpp"
+#include "confmodel/DetectorStream.hpp"
+#include "confmodel/DetectorToDaqConnection.hpp"
+#include "confmodel/NetworkConnection.hpp"
 #include "confmodel/Session.hpp"
 #include "dfmessages/TriggerRecord_serialization.hpp"
 #include "logging/Logging.hpp"
@@ -113,142 +114,25 @@ TRBModule::init(std::shared_ptr<appfwk::ModuleConfiguration> mcfg)
     }
   }
 
-  const confmodel::Session* session = mcfg->configuration_manager()->session();
-  for (auto& app : session->get_all_applications()) {
-    auto roapp = app->cast<appmodel::ReadoutApplication>();
-    auto smartapp = app->cast<appmodel::SmartDaqApplication>();
-    if (roapp != nullptr) {
-      if (!roapp->disabled(*session)) {
-        setup_data_request_connections(roapp);
+  for (auto con : mdal->get_request_connections()) {
+    for (auto source_id : con->get_source_ids()) {
+
+      // find the queue for sourceid_req in the map
+      std::unique_lock<std::mutex> lk(m_map_sourceid_connections_mutex);
+      daqdataformats::SourceID sid;
+      sid.subsystem = daqdataformats::SourceID::string_to_subsystem(source_id->get_subsystem());
+      sid.id = source_id->get_sid();
+      auto it_req = m_map_sourceid_connections.find(sid);
+      if (it_req == m_map_sourceid_connections.end() || it_req->second == nullptr) {
+        m_map_sourceid_connections[sid] = get_iom_sender<dfmessages::DataRequest>(con->get_netconn()->UID());
       }
-    } else if (smartapp != nullptr) {
-      auto source_id_check = smartapp->get_source_id();
-      if (source_id_check != nullptr) {
-        setup_data_request_connections(smartapp);
-      }
+      lk.unlock();
     }
   }
 
   m_trb_conf = mdal->get_configuration();
 
   TLOG_DEBUG(TLVL_ENTER_EXIT_METHODS) << get_name() << ": Exiting init() method";
-}
-
-void
-TRBModule::setup_data_request_connections(const appmodel::SmartDaqApplication* smartapp)
-{
-  const appmodel::NetworkConnectionDescriptor* faNetDesc = nullptr;
-  for (auto rule : smartapp->get_network_rules()) {
-    auto endpoint_class = rule->get_endpoint_class();
-    auto data_type = rule->get_descriptor()->get_data_type();
-
-    if (data_type == "DataRequest") {
-      faNetDesc = rule->get_descriptor();
-    }
-  }
-
-  if (faNetDesc == nullptr) {
-    TLOG_DEBUG(TLVL_INIT) << "SmartDaqApplication " << smartapp->UID() << " does not have any DataRequest inputs";
-    return;
-  }
-
-  std::string faNetUid = faNetDesc->get_uid_base() + smartapp->UID();
-
-  // find the queue for sourceid_req in the map
-  std::unique_lock<std::mutex> lk(m_map_sourceid_connections_mutex);
-  daqdataformats::SourceID sid;
-  sid.subsystem = daqdataformats::SourceID::string_to_subsystem(smartapp->get_source_id()->get_subsystem());
-  sid.id = smartapp->get_source_id()->get_sid();
-  auto it_req = m_map_sourceid_connections.find(sid);
-  if (it_req == m_map_sourceid_connections.end() || it_req->second == nullptr) {
-    m_map_sourceid_connections[sid] = get_iom_sender<dfmessages::DataRequest>(faNetUid);
-
-    // TODO: This probably doesn't belong here, and probably should be more TriggerDecision-dependent
-    m_loop_sleep = std::chrono::duration_cast<std::chrono::milliseconds>(
-      m_queue_timeout / (2. + log2(m_map_sourceid_connections.size())));
-    if (m_loop_sleep.count() == 0) {
-      m_loop_sleep = m_queue_timeout;
-    }
-  }
-
-  lk.unlock();
-}
-
-void
-TRBModule::setup_data_request_connections(const appmodel::ReadoutApplication* roapp)
-{
-  std::vector<uint32_t> app_source_ids;
-  for (auto d2d_conn_res : roapp->get_contains()) {
-
-    TLOG() << "Processing DetectorToDaqConnection " << d2d_conn_res->UID();
-    // get the readout groups and the interfaces and streams therein; 1 reaout group corresponds to 1 data reader
-    // module
-    auto d2d_conn = d2d_conn_res->cast<confmodel::DetectorToDaqConnection>();
-
-    if (!d2d_conn) {
-      continue;
-    }
-
-    // Loop over senders
-    for (auto dros : d2d_conn->get_streams()) {
-
-      auto stream = dros->cast<confmodel::DetectorStream>();
-      if (!stream)
-        continue;
-      app_source_ids.push_back(stream->get_source_id());
-    }
-  }
-
-  const appmodel::NetworkConnectionDescriptor* faNetDesc = nullptr;
-  for (auto rule : roapp->get_network_rules()) {
-    auto endpoint_class = rule->get_endpoint_class();
-    auto data_type = rule->get_descriptor()->get_data_type();
-
-    if (endpoint_class == "FragmentAggregatorModule") {
-      faNetDesc = rule->get_descriptor();
-    }
-  }
-  std::string faNetUid = faNetDesc->get_uid_base() + roapp->UID();
-
-  // find the queue for sourceid_req in the map
-  std::unique_lock<std::mutex> lk(m_map_sourceid_connections_mutex);
-  for (auto& source_id : app_source_ids) {
-    daqdataformats::SourceID sid;
-    sid.subsystem = daqdataformats::SourceID::Subsystem::kDetectorReadout;
-    sid.id = source_id;
-    auto it_req = m_map_sourceid_connections.find(sid);
-    if (it_req == m_map_sourceid_connections.end() || it_req->second == nullptr) {
-      m_map_sourceid_connections[sid] = get_iom_sender<dfmessages::DataRequest>(faNetUid);
-
-      // TODO: This probably doesn't belong here, and probably should be more TriggerDecision-dependent
-      m_loop_sleep = std::chrono::duration_cast<std::chrono::milliseconds>(
-        m_queue_timeout / (2. + log2(m_map_sourceid_connections.size())));
-      if (m_loop_sleep.count() == 0) {
-        m_loop_sleep = m_queue_timeout;
-      }
-    }
-  }
-  daqdataformats::SourceID trig_sid;
-  trig_sid.subsystem = daqdataformats::SourceID::Subsystem::kTrigger;
-  trig_sid.id = roapp->get_tp_source_id();
-
-  // ID == 0 should disable TPs
-  if (trig_sid.id != 0) {
-    auto it_req = m_map_sourceid_connections.find(trig_sid);
-    if (it_req == m_map_sourceid_connections.end() || it_req->second == nullptr) {
-      m_map_sourceid_connections[trig_sid] = get_iom_sender<dfmessages::DataRequest>(faNetUid);
-    }
-  }
-
-  trig_sid.id = roapp->get_ta_source_id();
-  // ID == 0 should disable TAs
-  if (trig_sid.id != 0) {
-    auto it_req = m_map_sourceid_connections.find(trig_sid);
-    if (it_req == m_map_sourceid_connections.end() || it_req->second == nullptr) {
-      m_map_sourceid_connections[trig_sid] = get_iom_sender<dfmessages::DataRequest>(faNetUid);
-    }
-  }
-  lk.unlock();
 }
 
 void
@@ -267,7 +151,7 @@ TRBModule::generate_opmon_data()
   i.set_generated_trigger_records(m_generated_trigger_records.exchange(0));
   i.set_generated_data_requests(m_generated_data_requests.exchange(0));
   i.set_sleep_counter(m_sleep_counter.exchange(0));
-  i.set_loop_counter( m_loop_counter.exchange(0) );
+  i.set_loop_counter(m_loop_counter.exchange(0));
   i.set_data_waiting_time(m_data_waiting_time.exchange(0));
   i.set_data_request_width(m_data_request_width.exchange(0));
   i.set_trigger_decision_width(m_trigger_decision_width.exchange(0));
@@ -287,8 +171,7 @@ TRBModule::generate_opmon_data()
   err.set_duplicated_trigger_ids(m_duplicated_trigger_ids.load());
 
   publish(std::move(err));
-  
- }
+}
 
 void
 TRBModule::do_conf(const data_t&)
@@ -542,8 +425,7 @@ TRBModule::read_fragments()
 }
 
 bool
-TRBModule::read_and_process_trigger_decision(iomanager::Receiver::timeout_t timeout,
-                                                        std::atomic<bool>& running)
+TRBModule::read_and_process_trigger_decision(iomanager::Receiver::timeout_t timeout, std::atomic<bool>& running)
 {
 
   std::optional<dfmessages::TriggerDecision> temp_dec;
@@ -607,8 +489,7 @@ TRBModule::extract_trigger_record(const TriggerId& id)
 }
 
 unsigned int
-TRBModule::create_trigger_records_and_dispatch(const dfmessages::TriggerDecision& td,
-                                                          std::atomic<bool>& running)
+TRBModule::create_trigger_records_and_dispatch(const dfmessages::TriggerDecision& td, std::atomic<bool>& running)
 {
 
   unsigned int new_tr_counter = 0;
@@ -725,8 +606,8 @@ TRBModule::create_trigger_records_and_dispatch(const dfmessages::TriggerDecision
 
 bool
 TRBModule::dispatch_data_requests(dfmessages::DataRequest dr,
-                                             const daqdataformats::SourceID& sid,
-                                             std::atomic<bool>& running)
+                                  const daqdataformats::SourceID& sid,
+                                  std::atomic<bool>& running)
 
 {
 

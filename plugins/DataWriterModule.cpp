@@ -82,6 +82,7 @@ DataWriterModule::init(std::shared_ptr<appfwk::ModuleConfiguration> mcfg)
 
   m_module_configuration = mcfg;
   m_data_writer_conf = mdal->get_configuration();
+  m_writer_identifier = mdal->get_writer_identifier();
 
   if (inputs[0]->get_data_type() != datatype_to_string<std::unique_ptr<daqdataformats::TriggerRecord>>()) {
     throw InvalidQueueFatalError(ERS_HERE, get_name(), "TriggerRecord Input queue"); 
@@ -154,7 +155,7 @@ DataWriterModule::do_conf(const data_t&)
   try {
     m_data_writer = make_data_store(m_data_writer_conf->get_data_store_params()->get_type(),
                                     m_data_writer_conf->get_data_store_params()->UID(),
-                                    m_module_configuration);
+                                    m_module_configuration, m_writer_identifier);
     register_node("data_writer", m_data_writer);
   } catch (const ers::Issue& excpt) {
     throw UnableToConfigure(ERS_HERE, get_name(), excpt);
@@ -211,7 +212,7 @@ DataWriterModule::do_start(const data_t& payload)
     }
     
     try {
-      m_data_writer->prepare_for_run(m_run_number);
+      m_data_writer->prepare_for_run(m_run_number, (start_params.production_vs_test == "TEST"));
     } catch (const ers::Issue& excpt) {
       throw UnableToStart(ERS_HERE, get_name(), m_run_number, excpt);
     }

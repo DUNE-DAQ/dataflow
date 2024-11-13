@@ -63,12 +63,12 @@
 
 <oks-data>
 
-<info name="" type="" num-of-items="63" oks-format="data" oks-version="862f2957270" created-by="gjc" created-on="thinkpad" creation-time="20231116T105446" last-modified-by="eflumerf" last-modified-on="ironvirt9.mshome.net" last-modification-time="20240105T174142"/>
+<info name="" type="" num-of-items="62" oks-format="data" oks-version="862f2957270" created-by="gjc" created-on="thinkpad" creation-time="20231116T105446" last-modified-by="eflumerf" last-modified-on="ironvirt9.IRONDOMAIN.local" last-modification-time="20241023T204135"/>
 
 <include>
  <file path="schema/confmodel/dunedaq.schema.xml"/>
  <file path="schema/appmodel/application.schema.xml"/>
-  <file path="test/config/hdf5write_test_hwmap.data.xml"/>
+ <file path="test/config/hdf5write_test_hwmap.data.xml"/>
 </include>
 
 <comments>
@@ -85,81 +85,43 @@
 </comments>
 
 
-<obj class="ConnectionService" id="connectionservice">
- <attr name="application_name" type="string" val="gunicorn"/>
-  <attr name="commandline_parameters" type="string">
-    <data val="Process PID $$;"/>
-    <data val="trap &apos;pkill -INT -P $$&apos; EXIT;"/>
-    <data val="gunicorn -b 0.0.0.0:5000 --workers=1 --worker-class=gthread --threads=2 --timeout 5000000000 --log-level=debug connection-service.connection-flask:app"/>
-  </attr>
-  <attr name="threads" type="u16" val="1"/>
- <rel name="application_environment">
-  <ref class="VariableSet" id="consvc_ssh"/>
- </rel>
- <rel name="runs_on" class="VirtualHost" id="connectionservice"/>
-</obj>
-
 <obj class="DaqApplication" id="TestApp">
  <attr name="application_name" type="string" val="daq_application"/>
  <rel name="runs_on" class="VirtualHost" id="vlocalhost"/>
+ <rel name="opmon_conf" class="OpMonConf" id="slow-all-monitoring"/>
  <rel name="modules">
   <ref class="DataWriterModule" id="dwm-01"/>
  </rel>
 </obj>
 
-  <obj class="DataWriterModule" id="dwm-01">
-    <rel name="configuration" class="DataWriterConf" id="dw-01"/>
-  </obj>
+<obj class="DataStoreConf" id="default">
+ <attr name="type" type="string" val="HDF5DataStore"/>
+ <attr name="directory_path" type="string" val="."/>
+ <attr name="mode" type="enum" val="all-per-file"/>
+ <attr name="max_file_size" type="u64" val="4294967296"/>
+ <attr name="disable_unique_filename_suffix" type="bool" val="0"/>
+ <attr name="free_space_safety_factor" type="s32" val="5"/>
+ <rel name="file_layout_params" class="HDF5FileLayoutParams" id="default"/>
+ <rel name="filename_params" class="FilenameParams" id="default"/>
+</obj>
 
-  <obj class="DataWriterConf" id="dw-01">
-    <attr name="data_storage_prescale" type="s32" val="1"/>
-    <attr name="min_write_retry_time_ms" type="s32" val="1"/>
-    <attr name="max_write_retry_time_ms" type="s32" val="1000"/>
-    <attr name="write_retry_time_increase_factor" type="s32" val="2"/>
-    <rel name="data_store_params" class="DataStoreConf" id="default"/>
-  </obj>
+<obj class="DataWriterConf" id="dw-01">
+ <attr name="data_storage_prescale" type="s32" val="1"/>
+ <attr name="min_write_retry_time_ms" type="s32" val="1"/>
+ <attr name="max_write_retry_time_ms" type="s32" val="1000"/>
+ <attr name="write_retry_time_increase_factor" type="s32" val="2"/>
+ <rel name="data_store_params" class="DataStoreConf" id="default"/>
+</obj>
 
-  <obj class="DataStoreConf" id="default">
-    <attr name="type" type="string" val="HDF5DataStore"/>
-    <attr name="directory_path" type="string" val="."/>
-    <attr name="mode" type="enum" val="all-per-file"/>
-    <attr name="max_file_size" type="u64" val="4294967296"/>
-    <attr name="disable_unique_filename_suffix" type="bool" val="0"/>
-    <attr name="free_space_safety_factor" type="s32" val="5"/>
-    <rel name="file_layout_params" class="HDF5FileLayoutParams" id="default"/>
-    <rel name="filename_params" class="FilenameParams" id="default"/>
-  </obj>
+<obj class="DataWriterModule" id="dwm-01">
+ <rel name="configuration" class="DataWriterConf" id="dw-01"/>
+</obj>
 
-  <obj class="FilenameParams" id="default">
-    <attr name="file_type_prefix" type="enum" val="raw"/>
-    <attr name="run_number_prefix" type="string" val="run"/>
-    <attr name="digits_for_run_number" type="s32" val="6"/>
-    <attr name="digits_for_file_index" type="s32" val="4"/>
-    <attr name="digits_for_trigger_number" type="s32" val="6"/>
-  </obj>
-
-  <obj class="HDF5FileLayoutParams" id="default">
-    <attr name="record_name_prefix" type="string" val="TriggerRecord"/>
-    <attr name="digits_for_record_number" type="s32" val="5"/>
-    <attr name="digits_for_sequence_number" type="s32" val="4"/>
-    <attr name="record_header_dataset_name" type="string" val="TriggerRecordHeader"/>
-    <attr name="raw_data_group_name" type="string" val="RawData"/>
-    <attr name="view_group_name" type="string" val="Views"/>
-    <rel name="path_params_list">
-      <ref class="HDF5PathParams" id="TPC"/>
-    </rel>
-  </obj>
-
-  <obj class="HDF5PathParams" id="TPC">
-    <attr name="detector_group_type" type="string" val="Detector_Readout"/>
-    <attr name="detector_group_name" type="string" val="TPC"/>
-    <attr name="element_name_prefix" type="string" val="Link"/>
-    <attr name="digits_for_element_number" type="s32" val="10"/>
-  </obj>
 <obj class="DetectorConfig" id="dummy-detector">
  <attr name="tpg_channel_map" type="string" val="PD2HDChannelMap"/>
  <attr name="clock_speed_hz" type="u32" val="62500000"/>
  <attr name="op_env" type="string" val="hdf5writetest"/>
+ <attr name="offline_data_stream" type="string" val="cosmics"/>
 </obj>
 
 <obj class="FSMCommand" id="conf">
@@ -202,6 +164,10 @@
  <attr name="optional" type="bool" val="0"/>
 </obj>
 
+<obj class="FSMaction" id="dummy-if">
+ <attr name="name" type="string" val="user-provided-run-number"/>
+</obj>
+
 <obj class="FSMconfiguration" id="fsmConf-1">
  <attr name="states" type="string">
   <data val="initial"/>
@@ -232,10 +198,6 @@
  <rel name="pre_transitions">
   <ref class="FSMxTransition" id="start"/>
  </rel>
-</obj>
-
-<obj class="FSMaction" id="dummy-if">
- <attr name="name" type="string" val="user-provided-run-number"/>
 </obj>
 
 <obj class="FSMsequence" id="shutdown">
@@ -314,51 +276,77 @@
  </attr>
 </obj>
 
-<obj class="PhysicalHost" id="localhost">
- <rel name="contains">
-  <ref class="ProcessingResource" id="cpus"/>
+<obj class="FilenameParams" id="default">
+ <attr name="file_type_prefix" type="enum" val="raw"/>
+ <attr name="run_number_prefix" type="string" val="run"/>
+ <attr name="digits_for_run_number" type="s32" val="6"/>
+ <attr name="digits_for_file_index" type="s32" val="4"/>
+ <attr name="digits_for_trigger_number" type="s32" val="6"/>
+</obj>
+
+<obj class="HDF5FileLayoutParams" id="default">
+ <attr name="record_name_prefix" type="string" val="TriggerRecord"/>
+ <attr name="digits_for_record_number" type="s32" val="5"/>
+ <attr name="digits_for_sequence_number" type="s32" val="4"/>
+ <attr name="record_header_dataset_name" type="string" val="TriggerRecordHeader"/>
+ <attr name="raw_data_group_name" type="string" val="RawData"/>
+ <attr name="view_group_name" type="string" val="Views"/>
+ <rel name="path_params_list">
+  <ref class="HDF5PathParams" id="TPC"/>
  </rel>
 </obj>
 
-<obj class="ProcessingResource" id="cpus">
- <attr name="cpu_cores" type="u16">
-  <data val="0"/>
-  <data val="1"/>
-  <data val="2"/>
-  <data val="3"/>
- </attr>
+<obj class="HDF5PathParams" id="TPC">
+ <attr name="detector_group_type" type="string" val="Detector_Readout"/>
+ <attr name="detector_group_name" type="string" val="TPC"/>
+ <attr name="element_name_prefix" type="string" val="Link"/>
+ <attr name="digits_for_element_number" type="s32" val="10"/>
+</obj>
+
+<obj class="OpMonURI" id="local-opmon-uri">
+ <attr name="path" type="string" val="./info.json"/>
+ <attr name="type" type="enum" val="file"/>
 </obj>
 
 <obj class="Queue" id="trigger_record_q">
  <attr name="data_type" type="string" val="TriggerRecord"/>
+ <attr name="send_timeout_ms" type="u32" val="10"/>
+ <attr name="recv_timeout_ms" type="u32" val="10"/>
  <attr name="capacity" type="u32" val="1"/>
  <attr name="queue_type" type="enum" val="kFollySPSCQueue"/>
 </obj>
 
-	<obj class="RCApplication" id="df-controller">
-		<attr name="application_name" type="string" val="drunc-controller"/>
-		<rel name="runs_on" class="VirtualHost" id="controller"/>
-		<rel name="fsm" class="FSMconfiguration" id="fsmConf-1"/>
-		<rel name="broadcaster" class="RCBroadcaster" id="bcaster"/>
-	</obj>
-<obj class="RCApplication" id="my-controller-3-1">
+<obj class="RCApplication" id="df-controller">
  <attr name="application_name" type="string" val="drunc-controller"/>
  <rel name="runs_on" class="VirtualHost" id="controller"/>
+ <rel name="opmon_conf" class="OpMonConf" id="slow-all-monitoring"/>
  <rel name="fsm" class="FSMconfiguration" id="fsmConf-1"/>
  <rel name="broadcaster" class="RCBroadcaster" id="bcaster"/>
 </obj>
-	<obj class="RCApplication" id="my-controller-5-1">
-		<attr name="application_name" type="string" val="drunc-controller"/>
-		<rel name="runs_on" class="VirtualHost" id="controller"/>
-		<rel name="fsm" class="FSMconfiguration" id="fsmConf-1"/>
-		<rel name="broadcaster" class="RCBroadcaster" id="bcaster"/>
-	</obj>
-	<obj class="RCApplication" id="my-controller-5-10">
-		<attr name="application_name" type="string" val="drunc-controller"/>
-		<rel name="runs_on" class="VirtualHost" id="controller"/>
-		<rel name="fsm" class="FSMconfiguration" id="fsmConf-1"/>
-		<rel name="broadcaster" class="RCBroadcaster" id="bcaster"/>
-	</obj>
+
+<obj class="RCApplication" id="my-controller-3-1">
+ <attr name="application_name" type="string" val="drunc-controller"/>
+ <rel name="runs_on" class="VirtualHost" id="controller"/>
+ <rel name="opmon_conf" class="OpMonConf" id="slow-all-monitoring"/>
+ <rel name="fsm" class="FSMconfiguration" id="fsmConf-1"/>
+ <rel name="broadcaster" class="RCBroadcaster" id="bcaster"/>
+</obj>
+
+<obj class="RCApplication" id="my-controller-5-1">
+ <attr name="application_name" type="string" val="drunc-controller"/>
+ <rel name="runs_on" class="VirtualHost" id="controller"/>
+ <rel name="opmon_conf" class="OpMonConf" id="slow-all-monitoring"/>
+ <rel name="fsm" class="FSMconfiguration" id="fsmConf-1"/>
+ <rel name="broadcaster" class="RCBroadcaster" id="bcaster"/>
+</obj>
+
+<obj class="RCApplication" id="my-controller-5-10">
+ <attr name="application_name" type="string" val="drunc-controller"/>
+ <rel name="runs_on" class="VirtualHost" id="controller"/>
+ <rel name="opmon_conf" class="OpMonConf" id="slow-all-monitoring"/>
+ <rel name="fsm" class="FSMconfiguration" id="fsmConf-1"/>
+ <rel name="broadcaster" class="RCBroadcaster" id="bcaster"/>
+</obj>
 
 <obj class="RCBroadcaster" id="bcaster">
  <attr name="type" type="enum" val="kafka"/>
@@ -366,78 +354,81 @@
  <attr name="publish_timeout" type="u32" val="2"/>
 </obj>
 
-	<obj class="Segment" id="df-segment">
-		<rel name="applications">
-			<ref class="DaqApplication" id="TestApp"/>
+<obj class="Segment" id="df-segment">
+ <rel name="applications">
+  <ref class="DaqApplication" id="TestApp"/>
+ </rel>
+ <rel name="controller" class="RCApplication" id="df-controller"/>
+</obj>
 
-		</rel>
-		<rel name="controller" class="RCApplication" id="df-controller"/>
-	</obj>
+<obj class="Segment" id="generated-segment-3-1">
+ <rel name="segments">
+  <ref class="Segment" id="df-segment"/>
+ </rel>
+ <rel name="applications">
+  <ref class="ReadoutApplication" id="ru-3-1"/>
+ </rel>
+ <rel name="controller" class="RCApplication" id="my-controller-3-1"/>
+</obj>
 
-	<obj class="Segment" id="generated-segment-3-1">
-		<rel name="applications">
-			<ref class="ReadoutApplication" id="ru-3-1"/>
-		</rel>
-		<rel name="segments">
-			<ref class="Segment" id="df-segment"/>
-		</rel>
-		<rel name="controller" class="RCApplication" id="my-controller-3-1"/>
-	</obj>
-	<obj class="Segment" id="generated-segment-5-1">
-		<rel name="applications">
-			<ref class="ReadoutApplication" id="ru-5-1"/>
-		</rel>
-		<rel name="segments">
-			<ref class="Segment" id="df-segment"/>
-		</rel>
-		<rel name="controller" class="RCApplication" id="my-controller-5-1"/>
-	</obj>
-	<obj class="Segment" id="generated-segment-5-10">
-		<rel name="applications">
-			<ref class="ReadoutApplication" id="ru-5-10"/>
-		</rel>
-		<rel name="segments">
-			<ref class="Segment" id="df-segment"/>
-		</rel>
-		<rel name="controller" class="RCApplication" id="my-controller-5-10"/>
-	</obj>
+<obj class="Segment" id="generated-segment-5-1">
+ <rel name="segments">
+  <ref class="Segment" id="df-segment"/>
+ </rel>
+ <rel name="applications">
+  <ref class="ReadoutApplication" id="ru-5-1"/>
+ </rel>
+ <rel name="controller" class="RCApplication" id="my-controller-5-1"/>
+</obj>
+
+<obj class="Segment" id="generated-segment-5-10">
+ <rel name="segments">
+  <ref class="Segment" id="df-segment"/>
+ </rel>
+ <rel name="applications">
+  <ref class="ReadoutApplication" id="ru-5-10"/>
+ </rel>
+ <rel name="controller" class="RCApplication" id="my-controller-5-10"/>
+</obj>
 
 <obj class="Session" id="test-session-3-1">
- <attr name="use_connectivity_server" type="bool" val="0"/>
- <attr name="connectivity_service_interval_ms" type="u32" val="2000"/>
  <attr name="data_request_timeout_ms" type="u32" val="1000"/>
  <attr name="data_rate_slowdown_factor" type="u32" val="1"/>
  <attr name="rte_script" type="string" val="/home/gjc/DUNE/fddaq-v4.2.0-a9/install/daq_app_rte.sh"/>
+ <attr name="controller_log_level" type="enum" val="INFO"/>
  <rel name="environment">
   <ref class="VariableSet" id="common-env"/>
  </rel>
  <rel name="segment" class="Segment" id="generated-segment-3-1"/>
  <rel name="detector_configuration" class="DetectorConfig" id="dummy-detector"/>
+ <rel name="opmon_uri" class="OpMonURI" id="local-opmon-uri"/>
 </obj>
-  <obj class="Session" id="test-session-5-1">
-    <attr name="use_connectivity_server" type="bool" val="0"/>
-    <attr name="connectivity_service_interval_ms" type="u32" val="2000"/>
-    <attr name="data_request_timeout_ms" type="u32" val="1000"/>
-    <attr name="data_rate_slowdown_factor" type="u32" val="1"/>
-    <attr name="rte_script" type="string" val="/home/gjc/DUNE/fddaq-v4.2.0-a9/install/daq_app_rte.sh"/>
-    <rel name="environment">
-      <ref class="VariableSet" id="common-env"/>
-    </rel>
-    <rel name="segment" class="Segment" id="generated-segment-5-1"/>
-    <rel name="detector_configuration" class="DetectorConfig" id="dummy-detector"/>
-  </obj>
-  <obj class="Session" id="test-session-5-10">
-    <attr name="use_connectivity_server" type="bool" val="0"/>
-    <attr name="connectivity_service_interval_ms" type="u32" val="2000"/>
-    <attr name="data_request_timeout_ms" type="u32" val="1000"/>
-    <attr name="data_rate_slowdown_factor" type="u32" val="1"/>
-    <attr name="rte_script" type="string" val="/home/gjc/DUNE/fddaq-v4.2.0-a9/install/daq_app_rte.sh"/>
-    <rel name="environment">
-      <ref class="VariableSet" id="common-env"/>
-    </rel>
-    <rel name="segment" class="Segment" id="generated-segment-5-10"/>
-    <rel name="detector_configuration" class="DetectorConfig" id="dummy-detector"/>
-  </obj>
+
+<obj class="Session" id="test-session-5-1">
+ <attr name="data_request_timeout_ms" type="u32" val="1000"/>
+ <attr name="data_rate_slowdown_factor" type="u32" val="1"/>
+ <attr name="rte_script" type="string" val="/home/gjc/DUNE/fddaq-v4.2.0-a9/install/daq_app_rte.sh"/>
+ <attr name="controller_log_level" type="enum" val="INFO"/>
+ <rel name="environment">
+  <ref class="VariableSet" id="common-env"/>
+ </rel>
+ <rel name="segment" class="Segment" id="generated-segment-5-1"/>
+ <rel name="detector_configuration" class="DetectorConfig" id="dummy-detector"/>
+ <rel name="opmon_uri" class="OpMonURI" id="local-opmon-uri"/>
+</obj>
+
+<obj class="Session" id="test-session-5-10">
+ <attr name="data_request_timeout_ms" type="u32" val="1000"/>
+ <attr name="data_rate_slowdown_factor" type="u32" val="1"/>
+ <attr name="rte_script" type="string" val="/home/gjc/DUNE/fddaq-v4.2.0-a9/install/daq_app_rte.sh"/>
+ <attr name="controller_log_level" type="enum" val="INFO"/>
+ <rel name="environment">
+  <ref class="VariableSet" id="common-env"/>
+ </rel>
+ <rel name="segment" class="Segment" id="generated-segment-5-10"/>
+ <rel name="detector_configuration" class="DetectorConfig" id="dummy-detector"/>
+ <rel name="opmon_uri" class="OpMonURI" id="local-opmon-uri"/>
+</obj>
 
 <obj class="Variable" id="CMD_FAC">
  <attr name="name" type="string" val="CMD_FAC"/>
@@ -540,13 +531,6 @@
 </obj>
 
 <obj class="VirtualHost" id="controller">
- <rel name="uses">
-  <ref class="ProcessingResource" id="cpus"/>
- </rel>
- <rel name="runs_on" class="PhysicalHost" id="localhost"/>
-</obj>
-
-<obj class="VirtualHost" id="vlocalhost">
  <rel name="uses">
   <ref class="ProcessingResource" id="cpus"/>
  </rel>

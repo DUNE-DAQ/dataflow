@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="us-ascii"?>
+<?xml version="1.0" encoding="ASCII"?>
 
 <!-- oks-data version 2.2 -->
 
@@ -63,927 +63,903 @@
 
 <oks-data>
 
-  <info name="" type="" num-of-items="63" oks-format="data" oks-version="862f2957270" created-by="gjc" created-on="thinkpad" creation-time="20231116T105446" last-modified-by="eflumerf" last-modified-on="ironvirt9.mshome.net" last-modification-time="20240105T174142"/>
+<info name="" type="" num-of-items="136" oks-format="data" oks-version="862f2957270" created-by="gjc" created-on="thinkpad" creation-time="20231116T105446" last-modified-by="eflumerf" last-modified-on="ironvirt9.IRONDOMAIN.local" last-modification-time="20241023T204135"/>
 
-  <include>
-    <file path="schema/confmodel/dunedaq.schema.xml"/>
-    <file path="schema/appmodel/application.schema.xml"/>
-    <file path="schema/appmodel/fdmodules.schema.xml"/>
-  </include>
+<include>
+ <file path="schema/confmodel/dunedaq.schema.xml"/>
+ <file path="schema/appmodel/application.schema.xml"/>
+ <file path="schema/appmodel/fdmodules.schema.xml"/>
+ <file path="schema/appmodel/trigger.schema.xml"/>
+</include>
 
-  <comments>
-    <comment creation-time="20231116T122331" created-by="gjc" created-on="thinkpad" author="gjc" text="k"/>
-    <comment creation-time="20231117T105205" created-by="gjc" created-on="thinkpad" author="gjc" text="ff"/>
-    <comment creation-time="20231117T120703" created-by="gjc" created-on="thinkpad" author="gjc" text="n"/>
-    <comment creation-time="20231117T121356" created-by="gjc" created-on="thinkpad" author="gjc" text="rename"/>
-    <comment creation-time="20240105T145227" created-by="eflumerf" created-on="ironvirt9.mshome.net" author="eflumerf" text="test"/>
-    <comment creation-time="20240105T154002" created-by="eflumerf" created-on="ironvirt9.mshome.net" author="eflumerf" text="Adding test connections"/>
-    <comment creation-time="20240105T161451" created-by="eflumerf" created-on="ironvirt9.mshome.net" author="eflumerf" text="Fill out connections"/>
-    <comment creation-time="20240105T162114" created-by="eflumerf" created-on="ironvirt9.mshome.net" author="eflumerf" text="Adding DFO Module"/>
-    <comment creation-time="20240105T170629" created-by="eflumerf" created-on="ironvirt9.mshome.net" author="eflumerf" text="Update services used by network connections."/>
-    <comment creation-time="20240105T174142" created-by="eflumerf" created-on="ironvirt9.mshome.net" author="eflumerf" text="Update network connection types"/>
-  </comments>
+<comments>
+ <comment creation-time="20231116T122331" created-by="gjc" created-on="thinkpad" author="gjc" text="k"/>
+ <comment creation-time="20231117T105205" created-by="gjc" created-on="thinkpad" author="gjc" text="ff"/>
+ <comment creation-time="20231117T120703" created-by="gjc" created-on="thinkpad" author="gjc" text="n"/>
+ <comment creation-time="20231117T121356" created-by="gjc" created-on="thinkpad" author="gjc" text="rename"/>
+ <comment creation-time="20240105T145227" created-by="eflumerf" created-on="ironvirt9.mshome.net" author="eflumerf" text="test"/>
+ <comment creation-time="20240105T154002" created-by="eflumerf" created-on="ironvirt9.mshome.net" author="eflumerf" text="Adding test connections"/>
+ <comment creation-time="20240105T161451" created-by="eflumerf" created-on="ironvirt9.mshome.net" author="eflumerf" text="Fill out connections"/>
+ <comment creation-time="20240105T162114" created-by="eflumerf" created-on="ironvirt9.mshome.net" author="eflumerf" text="Adding DFO Module"/>
+ <comment creation-time="20240105T170629" created-by="eflumerf" created-on="ironvirt9.mshome.net" author="eflumerf" text="Update services used by network connections."/>
+ <comment creation-time="20240105T174142" created-by="eflumerf" created-on="ironvirt9.mshome.net" author="eflumerf" text="Update network connection types"/>
+</comments>
 
 
+<obj class="AVXFrugalPedestalSubtractProcessor" id="tpg-pedsub-proc">
+ <attr name="accum_limit" type="u8" val="10"/>
+</obj>
 
-  <obj class="DetectorStream" id="dummyStream-1-1">
-  <attr name="source_id" type="u32" val="1"/>
-  <rel name="geo_id" class="GeoId" id="dummyGeoId-1-1"/>
-  
+<obj class="AVXThresholdProcessor" id="tpg-threshold-proc">
+ <attr name="plane0" type="u16" val="100"/>
+ <attr name="plane1" type="u16" val="100"/>
+ <attr name="plane2" type="u16" val="100"/>
+</obj>
+
+<obj class="DPDKReaderConf" id="def-emu-nic-receiver-conf">
+ <attr name="template_for" type="class" val="FDFakeReaderModule"/>
+ <attr name="emulation_mode" type="bool" val="1"/>
+ <rel name="emulation_conf" class="StreamEmulationParameters" id="stream-emu"/>
+</obj>
+
+<obj class="DataHandlerConf" id="def-link-handler">
+ <attr name="template_for" type="class" val="FDDataHandlerModule"/>
+ <attr name="input_data_type" type="string" val="WIBEthFrame"/>
+ <attr name="generate_timesync" type="bool" val="1"/>
+ <rel name="request_handler" class="RequestHandler" id="def-data-request-handler"/>
+ <rel name="latency_buffer" class="LatencyBuffer" id="def-latency-buf"/>
+ <rel name="data_processor" class="RawDataProcessor" id="def-wib-processor"/>
+</obj>
+
+<obj class="DetectorStream" id="dummyStream-1-1">
+ <attr name="source_id" type="u32" val="1"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-1-1"/>
+</obj>
+
+<obj class="DetectorStream" id="dummyStream-1-10">
+ <attr name="source_id" type="u32" val="10"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-1-10"/>
 </obj>
 
 <obj class="DetectorStream" id="dummyStream-1-2">
-  <attr name="source_id" type="u32" val="2"/>
-  <rel name="geo_id" class="GeoId" id="dummyGeoId-1-2"/>
-  
+ <attr name="source_id" type="u32" val="2"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-1-2"/>
 </obj>
 
 <obj class="DetectorStream" id="dummyStream-1-3">
-  <attr name="source_id" type="u32" val="3"/>
-  <rel name="geo_id" class="GeoId" id="dummyGeoId-1-3"/>
-  
+ <attr name="source_id" type="u32" val="3"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-1-3"/>
 </obj>
 
 <obj class="DetectorStream" id="dummyStream-1-4">
-  <attr name="source_id" type="u32" val="4"/>
-  <rel name="geo_id" class="GeoId" id="dummyGeoId-1-4"/>
-  
+ <attr name="source_id" type="u32" val="4"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-1-4"/>
 </obj>
 
-  <obj class="DetectorStream" id="dummyStream-1-5">
-    <attr name="source_id" type="u32" val="5"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-1-5"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-1-6">
-    <attr name="source_id" type="u32" val="6"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-1-6"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-1-7">
-    <attr name="source_id" type="u32" val="7"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-1-7"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-1-8">
-    <attr name="source_id" type="u32" val="8"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-1-8"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-1-9">
-    <attr name="source_id" type="u32" val="9"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-1-9"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-1-10">
-    <attr name="source_id" type="u32" val="10"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-1-10"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-2-1">
-    <attr name="source_id" type="u32" val="11"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-2-1"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-2-2">
-    <attr name="source_id" type="u32" val="12"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-2-2"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-2-3">
-    <attr name="source_id" type="u32" val="13"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-2-3"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-2-4">
-    <attr name="source_id" type="u32" val="14"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-2-4"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-2-5">
-    <attr name="source_id" type="u32" val="15"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-2-5"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-2-6">
-    <attr name="source_id" type="u32" val="16"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-2-6"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-2-7">
-    <attr name="source_id" type="u32" val="17"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-2-7"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-2-8">
-    <attr name="source_id" type="u32" val="18"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-2-8"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-2-9">
-    <attr name="source_id" type="u32" val="19"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-2-9"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-2-10">
-    <attr name="source_id" type="u32" val="20"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-2-10"/>
-    
-  </obj>
-
-
-  <obj class="DetectorStream" id="dummyStream-3-1">
-    <attr name="source_id" type="u32" val="21"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-3-1"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-3-2">
-    <attr name="source_id" type="u32" val="22"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-3-2"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-3-3">
-    <attr name="source_id" type="u32" val="23"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-3-3"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-3-4">
-    <attr name="source_id" type="u32" val="24"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-3-4"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-3-5">
-    <attr name="source_id" type="u32" val="25"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-3-5"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-3-6">
-    <attr name="source_id" type="u32" val="26"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-3-6"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-3-7">
-    <attr name="source_id" type="u32" val="27"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-3-7"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-3-8">
-    <attr name="source_id" type="u32" val="28"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-3-8"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-3-9">
-    <attr name="source_id" type="u32" val="29"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-3-9"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-3-10">
-    <attr name="source_id" type="u32" val="30"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-3-10"/>
-    
-  </obj>
-
-
-  <obj class="DetectorStream" id="dummyStream-4-1">
-    <attr name="source_id" type="u32" val="31"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-4-1"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-4-2">
-    <attr name="source_id" type="u32" val="32"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-4-2"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-4-3">
-    <attr name="source_id" type="u32" val="33"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-4-3"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-4-4">
-    <attr name="source_id" type="u32" val="34"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-4-4"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-4-5">
-    <attr name="source_id" type="u32" val="35"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-4-5"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-4-6">
-    <attr name="source_id" type="u32" val="36"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-4-6"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-4-7">
-    <attr name="source_id" type="u32" val="37"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-4-7"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-4-8">
-    <attr name="source_id" type="u32" val="38"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-4-8"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-4-9">
-    <attr name="source_id" type="u32" val="39"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-4-9"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-4-10">
-    <attr name="source_id" type="u32" val="40"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-4-10"/>
-    
-  </obj>
-
-
-  <obj class="DetectorStream" id="dummyStream-5-1">
-    <attr name="source_id" type="u32" val="41"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-5-1"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-5-2">
-    <attr name="source_id" type="u32" val="42"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-5-2"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-5-3">
-    <attr name="source_id" type="u32" val="43"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-5-3"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-5-4">
-    <attr name="source_id" type="u32" val="44"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-5-4"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-5-5">
-    <attr name="source_id" type="u32" val="45"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-5-5"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-5-6">
-    <attr name="source_id" type="u32" val="46"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-5-6"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-5-7">
-    <attr name="source_id" type="u32" val="47"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-5-7"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-5-8">
-    <attr name="source_id" type="u32" val="48"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-5-8"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-5-9">
-    <attr name="source_id" type="u32" val="49"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-5-9"/>
-    
-  </obj>
-
-  <obj class="DetectorStream" id="dummyStream-5-10">
-    <attr name="source_id" type="u32" val="50"/>
-    <rel name="geo_id" class="GeoId" id="dummyGeoId-5-10"/>
-    
-  </obj>
-
-
-  <obj class="GeoId" id="dummyGeoId-1-1">
-  <attr name="detector_id" type="u32" val="3"/>
-  <attr name="crate_id" type="u32" val="1"/>
-  <attr name="slot_id" type="u32" val="0"/>
-  <attr name="stream_id" type="u32" val="0"/>
+<obj class="DetectorStream" id="dummyStream-1-5">
+ <attr name="source_id" type="u32" val="5"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-1-5"/>
 </obj>
 
-<obj class="GeoId" id="dummyGeoId-1-2">
-  <attr name="detector_id" type="u32" val="3"/>
-  <attr name="crate_id" type="u32" val="1"/>
-  <attr name="slot_id" type="u32" val="0"/>
-  <attr name="stream_id" type="u32" val="1"/>
+<obj class="DetectorStream" id="dummyStream-1-6">
+ <attr name="source_id" type="u32" val="6"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-1-6"/>
 </obj>
 
-  <obj class="GeoId" id="dummyGeoId-1-3">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="1"/>
-    <attr name="slot_id" type="u32" val="1"/>
-    <attr name="stream_id" type="u32" val="0"/>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-1-7">
+ <attr name="source_id" type="u32" val="7"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-1-7"/>
+</obj>
 
-  <obj class="GeoId" id="dummyGeoId-1-4">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="1"/>
-    <attr name="slot_id" type="u32" val="1"/>
-    <attr name="stream_id" type="u32" val="1"/>
-  </obj>
-  <obj class="GeoId" id="dummyGeoId-1-5">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="1"/>
-    <attr name="slot_id" type="u32" val="2"/>
-    <attr name="stream_id" type="u32" val="0"/>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-1-8">
+ <attr name="source_id" type="u32" val="8"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-1-8"/>
+</obj>
 
-  <obj class="GeoId" id="dummyGeoId-1-6">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="1"/>
-    <attr name="slot_id" type="u32" val="2"/>
-    <attr name="stream_id" type="u32" val="1"/>
-  </obj>
-  <obj class="GeoId" id="dummyGeoId-1-7">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="1"/>
-    <attr name="slot_id" type="u32" val="3"/>
-    <attr name="stream_id" type="u32" val="0"/>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-1-9">
+ <attr name="source_id" type="u32" val="9"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-1-9"/>
+</obj>
 
-  <obj class="GeoId" id="dummyGeoId-1-8">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="1"/>
-    <attr name="slot_id" type="u32" val="3"/>
-    <attr name="stream_id" type="u32" val="1"/>
-  </obj>
-  <obj class="GeoId" id="dummyGeoId-1-9">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="1"/>
-    <attr name="slot_id" type="u32" val="4"/>
-    <attr name="stream_id" type="u32" val="0"/>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-2-1">
+ <attr name="source_id" type="u32" val="11"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-2-1"/>
+</obj>
 
-  <obj class="GeoId" id="dummyGeoId-1-10">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="1"/>
-    <attr name="slot_id" type="u32" val="4"/>
-    <attr name="stream_id" type="u32" val="1"/>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-2-10">
+ <attr name="source_id" type="u32" val="20"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-2-10"/>
+</obj>
 
-  <obj class="GeoId" id="dummyGeoId-2-1">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="2"/>
-    <attr name="slot_id" type="u32" val="0"/>
-    <attr name="stream_id" type="u32" val="0"/>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-2-2">
+ <attr name="source_id" type="u32" val="12"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-2-2"/>
+</obj>
 
-  <obj class="GeoId" id="dummyGeoId-2-2">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="2"/>
-    <attr name="slot_id" type="u32" val="0"/>
-    <attr name="stream_id" type="u32" val="1"/>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-2-3">
+ <attr name="source_id" type="u32" val="13"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-2-3"/>
+</obj>
 
-  <obj class="GeoId" id="dummyGeoId-2-3">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="2"/>
-    <attr name="slot_id" type="u32" val="1"/>
-    <attr name="stream_id" type="u32" val="0"/>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-2-4">
+ <attr name="source_id" type="u32" val="14"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-2-4"/>
+</obj>
 
-  <obj class="GeoId" id="dummyGeoId-2-4">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="2"/>
-    <attr name="slot_id" type="u32" val="1"/>
-    <attr name="stream_id" type="u32" val="1"/>
-  </obj>
-  <obj class="GeoId" id="dummyGeoId-2-5">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="2"/>
-    <attr name="slot_id" type="u32" val="2"/>
-    <attr name="stream_id" type="u32" val="0"/>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-2-5">
+ <attr name="source_id" type="u32" val="15"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-2-5"/>
+</obj>
 
-  <obj class="GeoId" id="dummyGeoId-2-6">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="2"/>
-    <attr name="slot_id" type="u32" val="2"/>
-    <attr name="stream_id" type="u32" val="1"/>
-  </obj>
-  <obj class="GeoId" id="dummyGeoId-2-7">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="2"/>
-    <attr name="slot_id" type="u32" val="3"/>
-    <attr name="stream_id" type="u32" val="0"/>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-2-6">
+ <attr name="source_id" type="u32" val="16"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-2-6"/>
+</obj>
 
-  <obj class="GeoId" id="dummyGeoId-2-8">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="2"/>
-    <attr name="slot_id" type="u32" val="3"/>
-    <attr name="stream_id" type="u32" val="1"/>
-  </obj>
-  <obj class="GeoId" id="dummyGeoId-2-9">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="2"/>
-    <attr name="slot_id" type="u32" val="4"/>
-    <attr name="stream_id" type="u32" val="0"/>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-2-7">
+ <attr name="source_id" type="u32" val="17"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-2-7"/>
+</obj>
 
-  <obj class="GeoId" id="dummyGeoId-2-10">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="2"/>
-    <attr name="slot_id" type="u32" val="4"/>
-    <attr name="stream_id" type="u32" val="1"/>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-2-8">
+ <attr name="source_id" type="u32" val="18"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-2-8"/>
+</obj>
 
-  <obj class="GeoId" id="dummyGeoId-3-1">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="3"/>
-    <attr name="slot_id" type="u32" val="0"/>
-    <attr name="stream_id" type="u32" val="0"/>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-2-9">
+ <attr name="source_id" type="u32" val="19"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-2-9"/>
+</obj>
 
-  <obj class="GeoId" id="dummyGeoId-3-2">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="3"/>
-    <attr name="slot_id" type="u32" val="0"/>
-    <attr name="stream_id" type="u32" val="1"/>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-3-1">
+ <attr name="source_id" type="u32" val="21"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-3-1"/>
+</obj>
 
-  <obj class="GeoId" id="dummyGeoId-3-3">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="3"/>
-    <attr name="slot_id" type="u32" val="1"/>
-    <attr name="stream_id" type="u32" val="0"/>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-3-10">
+ <attr name="source_id" type="u32" val="30"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-3-10"/>
+</obj>
 
-  <obj class="GeoId" id="dummyGeoId-3-4">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="3"/>
-    <attr name="slot_id" type="u32" val="1"/>
-    <attr name="stream_id" type="u32" val="1"/>
-  </obj>
-  <obj class="GeoId" id="dummyGeoId-3-5">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="3"/>
-    <attr name="slot_id" type="u32" val="2"/>
-    <attr name="stream_id" type="u32" val="0"/>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-3-2">
+ <attr name="source_id" type="u32" val="22"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-3-2"/>
+</obj>
 
-  <obj class="GeoId" id="dummyGeoId-3-6">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="3"/>
-    <attr name="slot_id" type="u32" val="2"/>
-    <attr name="stream_id" type="u32" val="1"/>
-  </obj>
-  <obj class="GeoId" id="dummyGeoId-3-7">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="3"/>
-    <attr name="slot_id" type="u32" val="3"/>
-    <attr name="stream_id" type="u32" val="0"/>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-3-3">
+ <attr name="source_id" type="u32" val="23"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-3-3"/>
+</obj>
 
-  <obj class="GeoId" id="dummyGeoId-3-8">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="3"/>
-    <attr name="slot_id" type="u32" val="3"/>
-    <attr name="stream_id" type="u32" val="1"/>
-  </obj>
-  <obj class="GeoId" id="dummyGeoId-3-9">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="3"/>
-    <attr name="slot_id" type="u32" val="4"/>
-    <attr name="stream_id" type="u32" val="0"/>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-3-4">
+ <attr name="source_id" type="u32" val="24"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-3-4"/>
+</obj>
 
-  <obj class="GeoId" id="dummyGeoId-3-10">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="3"/>
-    <attr name="slot_id" type="u32" val="4"/>
-    <attr name="stream_id" type="u32" val="1"/>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-3-5">
+ <attr name="source_id" type="u32" val="25"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-3-5"/>
+</obj>
 
-  <obj class="GeoId" id="dummyGeoId-4-1">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="4"/>
-    <attr name="slot_id" type="u32" val="0"/>
-    <attr name="stream_id" type="u32" val="0"/>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-3-6">
+ <attr name="source_id" type="u32" val="26"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-3-6"/>
+</obj>
 
-  <obj class="GeoId" id="dummyGeoId-4-2">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="4"/>
-    <attr name="slot_id" type="u32" val="0"/>
-    <attr name="stream_id" type="u32" val="1"/>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-3-7">
+ <attr name="source_id" type="u32" val="27"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-3-7"/>
+</obj>
 
-  <obj class="GeoId" id="dummyGeoId-4-3">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="4"/>
-    <attr name="slot_id" type="u32" val="1"/>
-    <attr name="stream_id" type="u32" val="0"/>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-3-8">
+ <attr name="source_id" type="u32" val="28"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-3-8"/>
+</obj>
 
-  <obj class="GeoId" id="dummyGeoId-4-4">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="4"/>
-    <attr name="slot_id" type="u32" val="1"/>
-    <attr name="stream_id" type="u32" val="1"/>
-  </obj>
-  <obj class="GeoId" id="dummyGeoId-4-5">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="4"/>
-    <attr name="slot_id" type="u32" val="2"/>
-    <attr name="stream_id" type="u32" val="0"/>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-3-9">
+ <attr name="source_id" type="u32" val="29"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-3-9"/>
+</obj>
 
-  <obj class="GeoId" id="dummyGeoId-4-6">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="4"/>
-    <attr name="slot_id" type="u32" val="2"/>
-    <attr name="stream_id" type="u32" val="1"/>
-  </obj>
-  <obj class="GeoId" id="dummyGeoId-4-7">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="4"/>
-    <attr name="slot_id" type="u32" val="3"/>
-    <attr name="stream_id" type="u32" val="0"/>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-4-1">
+ <attr name="source_id" type="u32" val="31"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-4-1"/>
+</obj>
 
-  <obj class="GeoId" id="dummyGeoId-4-8">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="4"/>
-    <attr name="slot_id" type="u32" val="3"/>
-    <attr name="stream_id" type="u32" val="1"/>
-  </obj>
-  <obj class="GeoId" id="dummyGeoId-4-9">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="4"/>
-    <attr name="slot_id" type="u32" val="4"/>
-    <attr name="stream_id" type="u32" val="0"/>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-4-10">
+ <attr name="source_id" type="u32" val="40"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-4-10"/>
+</obj>
 
-  <obj class="GeoId" id="dummyGeoId-4-10">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="4"/>
-    <attr name="slot_id" type="u32" val="4"/>
-    <attr name="stream_id" type="u32" val="1"/>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-4-2">
+ <attr name="source_id" type="u32" val="32"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-4-2"/>
+</obj>
 
-  <obj class="GeoId" id="dummyGeoId-5-1">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="5"/>
-    <attr name="slot_id" type="u32" val="0"/>
-    <attr name="stream_id" type="u32" val="0"/>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-4-3">
+ <attr name="source_id" type="u32" val="33"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-4-3"/>
+</obj>
 
-  <obj class="GeoId" id="dummyGeoId-5-2">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="5"/>
-    <attr name="slot_id" type="u32" val="0"/>
-    <attr name="stream_id" type="u32" val="1"/>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-4-4">
+ <attr name="source_id" type="u32" val="34"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-4-4"/>
+</obj>
 
-  <obj class="GeoId" id="dummyGeoId-5-3">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="5"/>
-    <attr name="slot_id" type="u32" val="1"/>
-    <attr name="stream_id" type="u32" val="0"/>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-4-5">
+ <attr name="source_id" type="u32" val="35"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-4-5"/>
+</obj>
 
-  <obj class="GeoId" id="dummyGeoId-5-4">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="5"/>
-    <attr name="slot_id" type="u32" val="1"/>
-    <attr name="stream_id" type="u32" val="1"/>
-  </obj>
-  <obj class="GeoId" id="dummyGeoId-5-5">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="5"/>
-    <attr name="slot_id" type="u32" val="2"/>
-    <attr name="stream_id" type="u32" val="0"/>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-4-6">
+ <attr name="source_id" type="u32" val="36"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-4-6"/>
+</obj>
 
-  <obj class="GeoId" id="dummyGeoId-5-6">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="5"/>
-    <attr name="slot_id" type="u32" val="2"/>
-    <attr name="stream_id" type="u32" val="1"/>
-  </obj>
-  <obj class="GeoId" id="dummyGeoId-5-7">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="5"/>
-    <attr name="slot_id" type="u32" val="3"/>
-    <attr name="stream_id" type="u32" val="0"/>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-4-7">
+ <attr name="source_id" type="u32" val="37"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-4-7"/>
+</obj>
 
-  <obj class="GeoId" id="dummyGeoId-5-8">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="5"/>
-    <attr name="slot_id" type="u32" val="3"/>
-    <attr name="stream_id" type="u32" val="1"/>
-  </obj>
-  <obj class="GeoId" id="dummyGeoId-5-9">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="5"/>
-    <attr name="slot_id" type="u32" val="4"/>
-    <attr name="stream_id" type="u32" val="0"/>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-4-8">
+ <attr name="source_id" type="u32" val="38"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-4-8"/>
+</obj>
 
-  <obj class="GeoId" id="dummyGeoId-5-10">
-    <attr name="detector_id" type="u32" val="3"/>
-    <attr name="crate_id" type="u32" val="5"/>
-    <attr name="slot_id" type="u32" val="4"/>
-    <attr name="stream_id" type="u32" val="1"/>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-4-9">
+ <attr name="source_id" type="u32" val="39"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-4-9"/>
+</obj>
 
-  <obj class="DetectorToDaqConnection" id="det-1-1">
-    <rel name="contains">
-      <ref class="FakeDataSender" id="det-streams-1-1"/>
-    </rel>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-5-1">
+ <attr name="source_id" type="u32" val="41"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-5-1"/>
+</obj>
 
-  <obj class="DetectorToDaqConnection" id="det-1-2">
-    <rel name="contains">
-      <ref class="FakeDataSender" id="det-streams-1-2"/>
-    </rel>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-5-10">
+ <attr name="source_id" type="u32" val="50"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-5-10"/>
+</obj>
 
-  <obj class="DetectorToDaqConnection" id="det-1-3">
-    <rel name="contains">
-      <ref class="FakeDataSender" id="det-streams-1-3"/>
-    </rel>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-5-2">
+ <attr name="source_id" type="u32" val="42"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-5-2"/>
+</obj>
 
-  <obj class="DetectorToDaqConnection" id="det-1-4">
-    <rel name="contains">
-      <ref class="FakeDataSender" id="det-streams-1-4"/>
-    </rel>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-5-3">
+ <attr name="source_id" type="u32" val="43"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-5-3"/>
+</obj>
 
-  <obj class="DetectorToDaqConnection" id="det-1-5">
-    <rel name="contains">
-      <ref class="FakeDataSender" id="det-streams-1-5"/>
-    </rel>
-  </obj>
+<obj class="DetectorStream" id="dummyStream-5-4">
+ <attr name="source_id" type="u32" val="44"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-5-4"/>
+</obj>
+
+<obj class="DetectorStream" id="dummyStream-5-5">
+ <attr name="source_id" type="u32" val="45"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-5-5"/>
+</obj>
+
+<obj class="DetectorStream" id="dummyStream-5-6">
+ <attr name="source_id" type="u32" val="46"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-5-6"/>
+</obj>
+
+<obj class="DetectorStream" id="dummyStream-5-7">
+ <attr name="source_id" type="u32" val="47"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-5-7"/>
+</obj>
+
+<obj class="DetectorStream" id="dummyStream-5-8">
+ <attr name="source_id" type="u32" val="48"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-5-8"/>
+</obj>
+
+<obj class="DetectorStream" id="dummyStream-5-9">
+ <attr name="source_id" type="u32" val="49"/>
+ <rel name="geo_id" class="GeoId" id="dummyGeoId-5-9"/>
+</obj>
+
+<obj class="DetectorToDaqConnection" id="det-1-1">
+ <rel name="contains">
+  <ref class="FakeDataSender" id="det-streams-1-1"/>
+ </rel>
+</obj>
+
+<obj class="DetectorToDaqConnection" id="det-1-2">
+ <rel name="contains">
+  <ref class="FakeDataSender" id="det-streams-1-2"/>
+ </rel>
+</obj>
+
+<obj class="DetectorToDaqConnection" id="det-1-3">
+ <rel name="contains">
+  <ref class="FakeDataSender" id="det-streams-1-3"/>
+ </rel>
+</obj>
+
+<obj class="DetectorToDaqConnection" id="det-1-4">
+ <rel name="contains">
+  <ref class="FakeDataSender" id="det-streams-1-4"/>
+ </rel>
+</obj>
+
+<obj class="DetectorToDaqConnection" id="det-1-5">
+ <rel name="contains">
+  <ref class="FakeDataSender" id="det-streams-1-5"/>
+ </rel>
+</obj>
+
 <obj class="DetectorToDaqConnection" id="det-10-1">
-  <rel name="contains">
-    <ref class="FakeDataSender" id="det-streams-10-1"/>
-  </rel>
+ <rel name="contains">
+  <ref class="FakeDataSender" id="det-streams-10-1"/>
+ </rel>
 </obj>
 
 <obj class="DetectorToDaqConnection" id="det-10-2">
-  <rel name="contains">
-    <ref class="FakeDataSender" id="det-streams-10-2"/>
-  </rel>
+ <rel name="contains">
+  <ref class="FakeDataSender" id="det-streams-10-2"/>
+ </rel>
 </obj>
 
 <obj class="DetectorToDaqConnection" id="det-10-3">
-  <rel name="contains">
-    <ref class="FakeDataSender" id="det-streams-10-3"/>
-  </rel>
+ <rel name="contains">
+  <ref class="FakeDataSender" id="det-streams-10-3"/>
+ </rel>
 </obj>
 
 <obj class="DetectorToDaqConnection" id="det-10-4">
-  <rel name="contains">
-    <ref class="FakeDataSender" id="det-streams-10-4"/>
-  </rel>
+ <rel name="contains">
+  <ref class="FakeDataSender" id="det-streams-10-4"/>
+ </rel>
 </obj>
 
 <obj class="DetectorToDaqConnection" id="det-10-5">
-  <rel name="contains">
-    <ref class="FakeDataSender" id="det-streams-10-5"/>
-  </rel>
+ <rel name="contains">
+  <ref class="FakeDataSender" id="det-streams-10-5"/>
+ </rel>
 </obj>
 
-  <obj class="FakeDataSender" id="det-streams-1-1">
-    <rel name="contains">
-      <ref class="DetectorStream" id="dummyStream-1-1"/>
-    </rel>
-  </obj>
+<obj class="FakeDataSender" id="det-streams-1-1">
+ <rel name="contains">
+  <ref class="DetectorStream" id="dummyStream-1-1"/>
+ </rel>
+</obj>
 
-  <obj class="FakeDataSender" id="det-streams-1-2">
-    <rel name="contains">
-      <ref class="DetectorStream" id="dummyStream-2-1"/>
-    </rel>
-  </obj>
+<obj class="FakeDataSender" id="det-streams-1-2">
+ <rel name="contains">
+  <ref class="DetectorStream" id="dummyStream-2-1"/>
+ </rel>
+</obj>
 
-  <obj class="FakeDataSender" id="det-streams-1-3">
-    <rel name="contains">
-      <ref class="DetectorStream" id="dummyStream-3-1"/>
-    </rel>
-  </obj>
+<obj class="FakeDataSender" id="det-streams-1-3">
+ <rel name="contains">
+  <ref class="DetectorStream" id="dummyStream-3-1"/>
+ </rel>
+</obj>
 
-  <obj class="FakeDataSender" id="det-streams-1-4">
-    <rel name="contains">
-      <ref class="DetectorStream" id="dummyStream-4-1"/>
-    </rel>
-  </obj>
+<obj class="FakeDataSender" id="det-streams-1-4">
+ <rel name="contains">
+  <ref class="DetectorStream" id="dummyStream-4-1"/>
+ </rel>
+</obj>
 
-  <obj class="FakeDataSender" id="det-streams-1-5">
-    <rel name="contains">
-      <ref class="DetectorStream" id="dummyStream-5-1"/>
-    </rel>
-  </obj>
+<obj class="FakeDataSender" id="det-streams-1-5">
+ <rel name="contains">
+  <ref class="DetectorStream" id="dummyStream-5-1"/>
+ </rel>
+</obj>
 
-  <obj class="FakeDataSender" id="det-streams-10-1">
-  <rel name="contains">
-    <ref class="DetectorStream" id="dummyStream-1-1"/>
-    <ref class="DetectorStream" id="dummyStream-1-2"/>
-    <ref class="DetectorStream" id="dummyStream-1-3"/>
-    <ref class="DetectorStream" id="dummyStream-1-4"/>
-    <ref class="DetectorStream" id="dummyStream-1-5"/>
-    <ref class="DetectorStream" id="dummyStream-1-6"/>
-    <ref class="DetectorStream" id="dummyStream-1-7"/>
-    <ref class="DetectorStream" id="dummyStream-1-8"/>
-    <ref class="DetectorStream" id="dummyStream-1-9"/>
-    <ref class="DetectorStream" id="dummyStream-1-10"/>
-  </rel>
+<obj class="FakeDataSender" id="det-streams-10-1">
+ <rel name="contains">
+  <ref class="DetectorStream" id="dummyStream-1-1"/>
+  <ref class="DetectorStream" id="dummyStream-1-2"/>
+  <ref class="DetectorStream" id="dummyStream-1-3"/>
+  <ref class="DetectorStream" id="dummyStream-1-4"/>
+  <ref class="DetectorStream" id="dummyStream-1-5"/>
+  <ref class="DetectorStream" id="dummyStream-1-6"/>
+  <ref class="DetectorStream" id="dummyStream-1-7"/>
+  <ref class="DetectorStream" id="dummyStream-1-8"/>
+  <ref class="DetectorStream" id="dummyStream-1-9"/>
+  <ref class="DetectorStream" id="dummyStream-1-10"/>
+ </rel>
 </obj>
 
 <obj class="FakeDataSender" id="det-streams-10-2">
-  <rel name="contains">
-    <ref class="DetectorStream" id="dummyStream-2-1"/>
-    <ref class="DetectorStream" id="dummyStream-2-2"/>
-    <ref class="DetectorStream" id="dummyStream-2-3"/>
-    <ref class="DetectorStream" id="dummyStream-2-4"/>
-    <ref class="DetectorStream" id="dummyStream-2-5"/>
-    <ref class="DetectorStream" id="dummyStream-2-6"/>
-    <ref class="DetectorStream" id="dummyStream-2-7"/>
-    <ref class="DetectorStream" id="dummyStream-2-8"/>
-    <ref class="DetectorStream" id="dummyStream-2-9"/>
-    <ref class="DetectorStream" id="dummyStream-2-10"/>
-  </rel>
+ <rel name="contains">
+  <ref class="DetectorStream" id="dummyStream-2-1"/>
+  <ref class="DetectorStream" id="dummyStream-2-2"/>
+  <ref class="DetectorStream" id="dummyStream-2-3"/>
+  <ref class="DetectorStream" id="dummyStream-2-4"/>
+  <ref class="DetectorStream" id="dummyStream-2-5"/>
+  <ref class="DetectorStream" id="dummyStream-2-6"/>
+  <ref class="DetectorStream" id="dummyStream-2-7"/>
+  <ref class="DetectorStream" id="dummyStream-2-8"/>
+  <ref class="DetectorStream" id="dummyStream-2-9"/>
+  <ref class="DetectorStream" id="dummyStream-2-10"/>
+ </rel>
 </obj>
 
 <obj class="FakeDataSender" id="det-streams-10-3">
-  <rel name="contains">
-    <ref class="DetectorStream" id="dummyStream-3-1"/>
-    <ref class="DetectorStream" id="dummyStream-3-2"/>
-    <ref class="DetectorStream" id="dummyStream-3-3"/>
-    <ref class="DetectorStream" id="dummyStream-3-4"/>
-    <ref class="DetectorStream" id="dummyStream-3-5"/>
-    <ref class="DetectorStream" id="dummyStream-3-6"/>
-    <ref class="DetectorStream" id="dummyStream-3-7"/>
-    <ref class="DetectorStream" id="dummyStream-3-8"/>
-    <ref class="DetectorStream" id="dummyStream-3-9"/>
-    <ref class="DetectorStream" id="dummyStream-3-10"/>
-  </rel>
+ <rel name="contains">
+  <ref class="DetectorStream" id="dummyStream-3-1"/>
+  <ref class="DetectorStream" id="dummyStream-3-2"/>
+  <ref class="DetectorStream" id="dummyStream-3-3"/>
+  <ref class="DetectorStream" id="dummyStream-3-4"/>
+  <ref class="DetectorStream" id="dummyStream-3-5"/>
+  <ref class="DetectorStream" id="dummyStream-3-6"/>
+  <ref class="DetectorStream" id="dummyStream-3-7"/>
+  <ref class="DetectorStream" id="dummyStream-3-8"/>
+  <ref class="DetectorStream" id="dummyStream-3-9"/>
+  <ref class="DetectorStream" id="dummyStream-3-10"/>
+ </rel>
 </obj>
 
 <obj class="FakeDataSender" id="det-streams-10-4">
-  <rel name="contains">
-    <ref class="DetectorStream" id="dummyStream-4-1"/>
-    <ref class="DetectorStream" id="dummyStream-4-2"/>
-    <ref class="DetectorStream" id="dummyStream-4-3"/>
-    <ref class="DetectorStream" id="dummyStream-4-4"/>
-    <ref class="DetectorStream" id="dummyStream-4-5"/>
-    <ref class="DetectorStream" id="dummyStream-4-6"/>
-    <ref class="DetectorStream" id="dummyStream-4-7"/>
-    <ref class="DetectorStream" id="dummyStream-4-8"/>
-    <ref class="DetectorStream" id="dummyStream-4-9"/>
-    <ref class="DetectorStream" id="dummyStream-4-10"/>
-  </rel>
+ <rel name="contains">
+  <ref class="DetectorStream" id="dummyStream-4-1"/>
+  <ref class="DetectorStream" id="dummyStream-4-2"/>
+  <ref class="DetectorStream" id="dummyStream-4-3"/>
+  <ref class="DetectorStream" id="dummyStream-4-4"/>
+  <ref class="DetectorStream" id="dummyStream-4-5"/>
+  <ref class="DetectorStream" id="dummyStream-4-6"/>
+  <ref class="DetectorStream" id="dummyStream-4-7"/>
+  <ref class="DetectorStream" id="dummyStream-4-8"/>
+  <ref class="DetectorStream" id="dummyStream-4-9"/>
+  <ref class="DetectorStream" id="dummyStream-4-10"/>
+ </rel>
 </obj>
 
 <obj class="FakeDataSender" id="det-streams-10-5">
-  <rel name="contains">
-    <ref class="DetectorStream" id="dummyStream-5-1"/>
-    <ref class="DetectorStream" id="dummyStream-5-2"/>
-    <ref class="DetectorStream" id="dummyStream-5-3"/>
-    <ref class="DetectorStream" id="dummyStream-5-4"/>
-    <ref class="DetectorStream" id="dummyStream-5-5"/>
-    <ref class="DetectorStream" id="dummyStream-5-6"/>
-    <ref class="DetectorStream" id="dummyStream-5-7"/>
-    <ref class="DetectorStream" id="dummyStream-5-8"/>
-    <ref class="DetectorStream" id="dummyStream-5-9"/>
-    <ref class="DetectorStream" id="dummyStream-5-10"/>
-  </rel>
+ <rel name="contains">
+  <ref class="DetectorStream" id="dummyStream-5-1"/>
+  <ref class="DetectorStream" id="dummyStream-5-2"/>
+  <ref class="DetectorStream" id="dummyStream-5-3"/>
+  <ref class="DetectorStream" id="dummyStream-5-4"/>
+  <ref class="DetectorStream" id="dummyStream-5-5"/>
+  <ref class="DetectorStream" id="dummyStream-5-6"/>
+  <ref class="DetectorStream" id="dummyStream-5-7"/>
+  <ref class="DetectorStream" id="dummyStream-5-8"/>
+  <ref class="DetectorStream" id="dummyStream-5-9"/>
+  <ref class="DetectorStream" id="dummyStream-5-10"/>
+ </rel>
 </obj>
 
-	<obj class="ReadoutApplication" id="ru-3-1">
-		<attr name="tp_source_id" type="u32" val="1000"/>
-    <rel name="runs_on" class="VirtualHost" id="vlocalhost"/>
-    <rel name="uses" class="RoHwConfig" id="rohw-1"/>
-    <rel name="link_handler" class="DataHandlerConf" id="def-link-handler"/>
-    <rel name="data_reader" class="DPDKReaderConf" id="def-emu-nic-receiver-conf"/>
-    <attr name="application_name" type="string" val="daq_application"/>
-    <rel name="contains">
-      <ref class="DetectorToDaqConnection" id="det-1-1"/>
-      <ref class="DetectorToDaqConnection" id="det-1-2"/>
-      <ref class="DetectorToDaqConnection" id="det-1-3"/>
-    </rel>
-  </obj>
-  <obj class="ReadoutApplication" id="ru-5-1">
-    <attr name="tp_source_id" type="u32" val="1000"/>
-    <rel name="runs_on" class="VirtualHost" id="vlocalhost"/>
-    <rel name="uses" class="RoHwConfig" id="rohw-1"/>
-    <rel name="link_handler" class="DataHandlerConf" id="def-link-handler"/>
-    <rel name="data_reader" class="DPDKReaderConf" id="def-emu-nic-receiver-conf"/>
-    <attr name="application_name" type="string" val="daq_application"/>
-    <rel name="contains">
-      <ref class="DetectorToDaqConnection" id="det-1-1"/>
-      <ref class="DetectorToDaqConnection" id="det-1-2"/>
-      <ref class="DetectorToDaqConnection" id="det-1-3"/>
-      <ref class="DetectorToDaqConnection" id="det-1-4"/>
-      <ref class="DetectorToDaqConnection" id="det-1-5"/>
-    </rel>
-  </obj>
-  <obj class="ReadoutApplication" id="ru-5-10">
-    <attr name="tp_source_id" type="u32" val="1000"/>
-    <rel name="runs_on" class="VirtualHost" id="vlocalhost"/>
-    <rel name="uses" class="RoHwConfig" id="rohw-1"/>
-    <rel name="link_handler" class="DataHandlerConf" id="def-link-handler"/>
-    <rel name="data_reader" class="DPDKReaderConf" id="def-emu-nic-receiver-conf"/>
-		<attr name="application_name" type="string" val="daq_application"/>
-		<rel name="contains">
-			<ref class="DetectorToDaqConnection" id="det-10-1"/>
-			<ref class="DetectorToDaqConnection" id="det-10-2"/>
-			<ref class="DetectorToDaqConnection" id="det-10-3"/>
-			<ref class="DetectorToDaqConnection" id="det-10-4"/>
-			<ref class="DetectorToDaqConnection" id="det-10-5"/>
-		</rel>
-	</obj>
+<obj class="GeoId" id="dummyGeoId-1-1">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="1"/>
+</obj>
 
-  <obj class="RoHwConfig" id="rohw-1">
-  </obj>
-  <obj class="DPDKReaderConf" id="def-emu-nic-receiver-conf">
-    <attr name="template_for" type="class" val="FDFakeReaderModule"/>
-    <attr name="emulation_mode" type="bool" val="1"/>
-    <attr name="eal_args" type="string" val=""/>
-    <rel name="emulation_conf" class="StreamEmulationParameters" id="stream-emu"/>
-  </obj>
-  <obj class="StreamEmulationParameters" id="stream-emu">
-    <attr name="data_file_name" type="string" val="/cvmfs/dunedaq.opensciencegrid.org/assets/files/d/d/1/wibeth_output_all_zeros.bin"/>
-    <attr name="input_file_size_limit" type="u32" val="1000000"/>
-    <attr name="set_t0" type="bool" val="1"/>
-    <attr name="random_population_size" type="u32" val="100000"/>
-    <attr name="frame_error_rate_hz" type="float" val="0"/>
-    <attr name="generate_periodic_adc_pattern" type="bool" val="1"/>
-    <attr name="TP_rate_per_channel" type="float" val="1"/>
-  </obj>
-  <obj class="DataHandlerConf" id="def-link-handler">
-    <attr name="template_for" type="class" val="FDDataHandlerModule"/>
-    <attr name="input_data_type" type="string" val="WIBEthFrame"/>
-    <attr name="generate_timesync" type="bool" val="1"/>
-    <rel name="request_handler" class="RequestHandler" id="def-data-request-handler"/>
-    <rel name="latency_buffer" class="LatencyBuffer" id="def-latency-buf"/>
-    <rel name="data_processor" class="RawDataProcessor" id="def-wib-processor"/>
-  </obj>
-  <obj class="RequestHandler" id="def-data-request-handler">
-    <attr name="handler_threads" type="u16" val="1"/>
-    <attr name="request_timeout" type="u32" val="10000"/>
-    <attr name="pop_limit_pct" type="float" val="0.5"/>
-    <attr name="pop_size_pct" type="float" val="0.8"/>
-    <attr name="warn_on_timeout" type="bool" val="1"/>
-    <attr name="warn_on_empty_buffer" type="bool" val="1"/>
-  </obj>
-  <obj class="LatencyBuffer" id="def-latency-buf">
-    <attr name="size" type="u32" val="139008"/>
-    <attr name="numa_aware" type="bool" val="1"/>
-    <attr name="numa_node" type="s16" val="1"/>
-    <attr name="intrinsic_allocator" type="bool" val="1"/>
-    <attr name="alignment_size" type="u32" val="4096"/>
-    <attr name="preallocation" type="bool" val="1"/>
-  </obj>
+<obj class="GeoId" id="dummyGeoId-1-10">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="1"/>
+ <attr name="slot_id" type="u32" val="4"/>
+ <attr name="stream_id" type="u32" val="1"/>
+</obj>
 
-  <obj class="RawDataProcessor" id="def-wib-processor">
-    <attr name="queue_sizes" type="u32" val="10000"/>
-    <attr name="thread_names_prefix" type="string" val="postproc-"/>
-    <attr name="mask_processing" type="bool" val="0"/>
-    <attr name="max_ticks_tot" type="u32" val="10000"/>
-    <attr name="tpg_enabled" type="bool" val="1"/>
-    <attr name="algorithm" type="string" val="SimpleThreshold"/>
-    <attr name="threshold" type="u16" val="1900"/>
-    <attr name="channel_map" type="string" val="PD2HDChannelMap"/>
-  </obj>
+<obj class="GeoId" id="dummyGeoId-1-2">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="1"/>
+ <attr name="stream_id" type="u32" val="1"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-1-3">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="1"/>
+ <attr name="slot_id" type="u32" val="1"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-1-4">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="1"/>
+ <attr name="slot_id" type="u32" val="1"/>
+ <attr name="stream_id" type="u32" val="1"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-1-5">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="1"/>
+ <attr name="slot_id" type="u32" val="2"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-1-6">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="1"/>
+ <attr name="slot_id" type="u32" val="2"/>
+ <attr name="stream_id" type="u32" val="1"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-1-7">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="1"/>
+ <attr name="slot_id" type="u32" val="3"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-1-8">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="1"/>
+ <attr name="slot_id" type="u32" val="3"/>
+ <attr name="stream_id" type="u32" val="1"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-1-9">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="1"/>
+ <attr name="slot_id" type="u32" val="4"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-2-1">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="2"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-2-10">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="2"/>
+ <attr name="slot_id" type="u32" val="4"/>
+ <attr name="stream_id" type="u32" val="1"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-2-2">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="2"/>
+ <attr name="stream_id" type="u32" val="1"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-2-3">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="2"/>
+ <attr name="slot_id" type="u32" val="1"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-2-4">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="2"/>
+ <attr name="slot_id" type="u32" val="1"/>
+ <attr name="stream_id" type="u32" val="1"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-2-5">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="2"/>
+ <attr name="slot_id" type="u32" val="2"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-2-6">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="2"/>
+ <attr name="slot_id" type="u32" val="2"/>
+ <attr name="stream_id" type="u32" val="1"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-2-7">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="2"/>
+ <attr name="slot_id" type="u32" val="3"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-2-8">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="2"/>
+ <attr name="slot_id" type="u32" val="3"/>
+ <attr name="stream_id" type="u32" val="1"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-2-9">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="2"/>
+ <attr name="slot_id" type="u32" val="4"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-3-1">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="3"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-3-10">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="3"/>
+ <attr name="slot_id" type="u32" val="4"/>
+ <attr name="stream_id" type="u32" val="1"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-3-2">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="3"/>
+ <attr name="stream_id" type="u32" val="1"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-3-3">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="3"/>
+ <attr name="slot_id" type="u32" val="1"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-3-4">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="3"/>
+ <attr name="slot_id" type="u32" val="1"/>
+ <attr name="stream_id" type="u32" val="1"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-3-5">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="3"/>
+ <attr name="slot_id" type="u32" val="2"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-3-6">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="3"/>
+ <attr name="slot_id" type="u32" val="2"/>
+ <attr name="stream_id" type="u32" val="1"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-3-7">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="3"/>
+ <attr name="slot_id" type="u32" val="3"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-3-8">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="3"/>
+ <attr name="slot_id" type="u32" val="3"/>
+ <attr name="stream_id" type="u32" val="1"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-3-9">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="3"/>
+ <attr name="slot_id" type="u32" val="4"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-4-1">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="4"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-4-10">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="4"/>
+ <attr name="slot_id" type="u32" val="4"/>
+ <attr name="stream_id" type="u32" val="1"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-4-2">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="4"/>
+ <attr name="stream_id" type="u32" val="1"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-4-3">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="4"/>
+ <attr name="slot_id" type="u32" val="1"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-4-4">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="4"/>
+ <attr name="slot_id" type="u32" val="1"/>
+ <attr name="stream_id" type="u32" val="1"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-4-5">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="4"/>
+ <attr name="slot_id" type="u32" val="2"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-4-6">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="4"/>
+ <attr name="slot_id" type="u32" val="2"/>
+ <attr name="stream_id" type="u32" val="1"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-4-7">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="4"/>
+ <attr name="slot_id" type="u32" val="3"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-4-8">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="4"/>
+ <attr name="slot_id" type="u32" val="3"/>
+ <attr name="stream_id" type="u32" val="1"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-4-9">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="4"/>
+ <attr name="slot_id" type="u32" val="4"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-5-1">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="5"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-5-10">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="5"/>
+ <attr name="slot_id" type="u32" val="4"/>
+ <attr name="stream_id" type="u32" val="1"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-5-2">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="5"/>
+ <attr name="stream_id" type="u32" val="1"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-5-3">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="5"/>
+ <attr name="slot_id" type="u32" val="1"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-5-4">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="5"/>
+ <attr name="slot_id" type="u32" val="1"/>
+ <attr name="stream_id" type="u32" val="1"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-5-5">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="5"/>
+ <attr name="slot_id" type="u32" val="2"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-5-6">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="5"/>
+ <attr name="slot_id" type="u32" val="2"/>
+ <attr name="stream_id" type="u32" val="1"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-5-7">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="5"/>
+ <attr name="slot_id" type="u32" val="3"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-5-8">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="5"/>
+ <attr name="slot_id" type="u32" val="3"/>
+ <attr name="stream_id" type="u32" val="1"/>
+</obj>
+
+<obj class="GeoId" id="dummyGeoId-5-9">
+ <attr name="detector_id" type="u32" val="3"/>
+ <attr name="crate_id" type="u32" val="5"/>
+ <attr name="slot_id" type="u32" val="4"/>
+</obj>
+
+<obj class="LatencyBuffer" id="def-latency-buf">
+ <attr name="size" type="u32" val="139008"/>
+ <attr name="numa_aware" type="bool" val="1"/>
+ <attr name="numa_node" type="s16" val="1"/>
+ <attr name="intrinsic_allocator" type="bool" val="1"/>
+ <attr name="alignment_size" type="u32" val="4096"/>
+ <attr name="preallocation" type="bool" val="1"/>
+</obj>
+
+<obj class="OpMonConf" id="slow-all-monitoring">
+ <attr name="level" type="u32" val="4294967295"/>
+ <attr name="interval_s" type="u32" val="10"/>
+</obj>
+
+<obj class="PhysicalHost" id="localhost">
+ <rel name="contains">
+  <ref class="ProcessingResource" id="cpus"/>
+ </rel>
+</obj>
+
+<obj class="ProcessingResource" id="cpus">
+ <attr name="cpu_cores" type="u16">
+  <data val="0"/>
+  <data val="1"/>
+  <data val="2"/>
+  <data val="3"/>
+ </attr>
+</obj>
+
+<obj class="RawDataProcessor" id="def-wib-processor">
+ <attr name="queue_sizes" type="u32" val="10000"/>
+ <attr name="thread_names_prefix" type="string" val="postproc-"/>
+ <attr name="latency_monitoring" type="bool" val="1"/>
+ <attr name="channel_map" type="string" val="PD2HDChannelMap"/>
+ <rel name="processing_steps">
+  <ref class="AVXFrugalPedestalSubtractProcessor" id="tpg-pedsub-proc"/>
+  <ref class="AVXThresholdProcessor" id="tpg-threshold-proc"/>
+ </rel>
+</obj>
+
+<obj class="ReadoutApplication" id="ru-3-1">
+ <attr name="application_name" type="string" val="daq_application"/>
+ <attr name="tp_generation_enabled" type="bool" val="1"/>
+ <attr name="ta_generation_enabled" type="bool" val="1"/>
+ <rel name="contains">
+  <ref class="DetectorToDaqConnection" id="det-1-1"/>
+  <ref class="DetectorToDaqConnection" id="det-1-2"/>
+  <ref class="DetectorToDaqConnection" id="det-1-3"/>
+ </rel>
+ <rel name="runs_on" class="VirtualHost" id="vlocalhost"/>
+ <rel name="opmon_conf" class="OpMonConf" id="slow-all-monitoring"/>
+ <rel name="uses" class="RoHwConfig" id="rohw-1"/>
+ <rel name="link_handler" class="DataHandlerConf" id="def-link-handler"/>
+ <rel name="data_reader" class="DPDKReaderConf" id="def-emu-nic-receiver-conf"/>
+</obj>
+
+<obj class="ReadoutApplication" id="ru-5-1">
+ <attr name="application_name" type="string" val="daq_application"/>
+ <attr name="tp_generation_enabled" type="bool" val="1"/>
+ <attr name="ta_generation_enabled" type="bool" val="1"/>
+ <rel name="contains">
+  <ref class="DetectorToDaqConnection" id="det-1-1"/>
+  <ref class="DetectorToDaqConnection" id="det-1-2"/>
+  <ref class="DetectorToDaqConnection" id="det-1-3"/>
+  <ref class="DetectorToDaqConnection" id="det-1-4"/>
+  <ref class="DetectorToDaqConnection" id="det-1-5"/>
+ </rel>
+ <rel name="runs_on" class="VirtualHost" id="vlocalhost"/>
+ <rel name="opmon_conf" class="OpMonConf" id="slow-all-monitoring"/>
+ <rel name="uses" class="RoHwConfig" id="rohw-1"/>
+ <rel name="link_handler" class="DataHandlerConf" id="def-link-handler"/>
+ <rel name="data_reader" class="DPDKReaderConf" id="def-emu-nic-receiver-conf"/>
+</obj>
+
+<obj class="ReadoutApplication" id="ru-5-10">
+ <attr name="application_name" type="string" val="daq_application"/>
+ <attr name="tp_generation_enabled" type="bool" val="1"/>
+ <attr name="ta_generation_enabled" type="bool" val="1"/>
+ <rel name="contains">
+  <ref class="DetectorToDaqConnection" id="det-10-1"/>
+  <ref class="DetectorToDaqConnection" id="det-10-2"/>
+  <ref class="DetectorToDaqConnection" id="det-10-3"/>
+  <ref class="DetectorToDaqConnection" id="det-10-4"/>
+  <ref class="DetectorToDaqConnection" id="det-10-5"/>
+ </rel>
+ <rel name="runs_on" class="VirtualHost" id="vlocalhost"/>
+ <rel name="opmon_conf" class="OpMonConf" id="slow-all-monitoring"/>
+ <rel name="uses" class="RoHwConfig" id="rohw-1"/>
+ <rel name="link_handler" class="DataHandlerConf" id="def-link-handler"/>
+ <rel name="data_reader" class="DPDKReaderConf" id="def-emu-nic-receiver-conf"/>
+</obj>
+
+<obj class="RequestHandler" id="def-data-request-handler">
+ <attr name="handler_threads" type="u16" val="1"/>
+ <attr name="request_timeout" type="u32" val="10000"/>
+ <attr name="pop_limit_pct" type="float" val="0.5"/>
+ <attr name="pop_size_pct" type="float" val="0.8"/>
+ <attr name="warn_on_timeout" type="bool" val="1"/>
+ <attr name="warn_on_empty_buffer" type="bool" val="1"/>
+</obj>
+
+<obj class="RoHwConfig" id="rohw-1">
+</obj>
+
+<obj class="StreamEmulationParameters" id="stream-emu">
+ <attr name="data_file_name" type="string" val="/cvmfs/dunedaq.opensciencegrid.org/assets/files/d/d/1/wibeth_output_all_zeros.bin"/>
+ <attr name="input_file_size_limit" type="u32" val="1000000"/>
+ <attr name="set_t0" type="bool" val="1"/>
+ <attr name="random_population_size" type="u32" val="100000"/>
+ <attr name="frame_error_rate_hz" type="float" val="0"/>
+ <attr name="generate_periodic_adc_pattern" type="bool" val="1"/>
+ <attr name="TP_rate_per_channel" type="float" val="1"/>
+</obj>
+
+<obj class="VirtualHost" id="vlocalhost">
+ <rel name="uses">
+  <ref class="ProcessingResource" id="cpus"/>
+ </rel>
+ <rel name="runs_on" class="PhysicalHost" id="localhost"/>
+</obj>
 
 </oks-data>

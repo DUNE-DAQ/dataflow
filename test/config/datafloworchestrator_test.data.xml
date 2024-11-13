@@ -63,7 +63,7 @@
 
 <oks-data>
 
-<info name="" type="" num-of-items="63" oks-format="data" oks-version="862f2957270" created-by="gjc" created-on="thinkpad" creation-time="20231116T105446" last-modified-by="eflumerf" last-modified-on="ironvirt9.mshome.net" last-modification-time="20240105T174142"/>
+<info name="" type="" num-of-items="62" oks-format="data" oks-version="862f2957270" created-by="gjc" created-on="thinkpad" creation-time="20231116T105446" last-modified-by="eflumerf" last-modified-on="ironvirt9.IRONDOMAIN.local" last-modification-time="20241023T210032"/>
 
 <include>
  <file path="schema/confmodel/dunedaq.schema.xml"/>
@@ -83,16 +83,6 @@
  <comment creation-time="20240105T174142" created-by="eflumerf" created-on="ironvirt9.mshome.net" author="eflumerf" text="Update network connection types"/>
 </comments>
 
-
-<obj class="ConnectionService" id="connectionservice">
- <attr name="application_name" type="string" val="gunicorn"/>
- <attr name="commandline_parameters" type="string" val="--bind=0.0.0.0:15000 --workers=1 --worker-class=gthread --threads=2 --timeout=0 --pid=connectionservice_15000.pid connection-service.connection-flask:app"/>
- <attr name="threads" type="u16" val="1"/>
- <rel name="application_environment">
-  <ref class="VariableSet" id="consvc_ssh"/>
- </rel>
- <rel name="runs_on" class="VirtualHost" id="connectionservice"/>
-</obj>
 
 <obj class="DFOConf" id="test">
  <attr name="general_queue_timeout_ms" type="u32" val="100"/>
@@ -117,6 +107,7 @@
 <obj class="DaqApplication" id="TestApp">
  <attr name="application_name" type="string" val="daq_application"/>
  <rel name="runs_on" class="VirtualHost" id="vlocalhost"/>
+ <rel name="opmon_conf" class="OpMonConf" id="slow-all-monitoring"/>
  <rel name="modules">
   <ref class="DFOModule" id="test"/>
  </rel>
@@ -126,6 +117,7 @@
  <attr name="tpg_channel_map" type="string" val="PD2HDChannelMap"/>
  <attr name="clock_speed_hz" type="u32" val="62500000"/>
  <attr name="op_env" type="string" val="swtest"/>
+ <attr name="offline_data_stream" type="string" val="cosmics"/>
 </obj>
 
 <obj class="FSMCommand" id="conf">
@@ -168,6 +160,10 @@
  <attr name="optional" type="bool" val="0"/>
 </obj>
 
+<obj class="FSMaction" id="dummy-if">
+ <attr name="name" type="string" val="user-provided-run-number"/>
+</obj>
+
 <obj class="FSMconfiguration" id="fsmConf-1">
  <attr name="states" type="string">
   <data val="initial"/>
@@ -198,10 +194,6 @@
  <rel name="pre_transitions">
   <ref class="FSMxTransition" id="start"/>
  </rel>
-</obj>
-
-<obj class="FSMaction" id="dummy-if">
- <attr name="name" type="string" val="user-provided-run-number"/>
 </obj>
 
 <obj class="FSMsequence" id="shutdown">
@@ -288,6 +280,8 @@
 
 <obj class="NetworkConnection" id="trigdec">
  <attr name="data_type" type="string" val="TriggerDecision"/>
+ <attr name="send_timeout_ms" type="u32" val="10"/>
+ <attr name="recv_timeout_ms" type="u32" val="10"/>
  <attr name="connection_type" type="enum" val="kSendRecv"/>
  <rel name="associated_service" class="Service" id="trigdec"/>
 </obj>
@@ -300,8 +294,20 @@
 
 <obj class="NetworkConnection" id="triginh">
  <attr name="data_type" type="string" val="TriggerInhibit"/>
+ <attr name="send_timeout_ms" type="u32" val="10"/>
+ <attr name="recv_timeout_ms" type="u32" val="10"/>
  <attr name="connection_type" type="enum" val="kSendRecv"/>
  <rel name="associated_service" class="Service" id="triginh"/>
+</obj>
+
+<obj class="OpMonConf" id="slow-all-monitoring">
+ <attr name="level" type="u32" val="4294967295"/>
+ <attr name="interval_s" type="u32" val="10"/>
+</obj>
+
+<obj class="OpMonURI" id="local-opmon-uri">
+ <attr name="path" type="string" val="./info.json"/>
+ <attr name="type" type="enum" val="file"/>
 </obj>
 
 <obj class="PhysicalHost" id="localhost">
@@ -321,14 +327,19 @@
 
 <obj class="Queue" id="trigger_decision_q">
  <attr name="data_type" type="string" val="TriggerDecision"/>
+ <attr name="send_timeout_ms" type="u32" val="10"/>
+ <attr name="recv_timeout_ms" type="u32" val="10"/>
  <attr name="capacity" type="u32" val="1"/>
  <attr name="queue_type" type="enum" val="kFollySPSCQueue"/>
 </obj>
 
 <obj class="RCApplication" id="my-controller">
- <attr name="commandline_parameters" type="string" val="file:///home/gjc/DUNE/fddaq-v4.2.0-a9/listrev/controller.json ${PORT} my-controller partition_name"/>
+ <attr name="commandline_parameters" type="string">
+  <data val="file:///home/gjc/DUNE/fddaq-v4.2.0-a9/listrev/controller.json ${PORT} my-controller partition_name"/>
+ </attr>
  <attr name="application_name" type="string" val="drunc-controller"/>
  <rel name="runs_on" class="VirtualHost" id="controller"/>
+ <rel name="opmon_conf" class="OpMonConf" id="slow-all-monitoring"/>
  <rel name="fsm" class="FSMconfiguration" id="fsmConf-1"/>
  <rel name="broadcaster" class="RCBroadcaster" id="bcaster"/>
 </obj>
@@ -371,16 +382,16 @@
 </obj>
 
 <obj class="Session" id="partition_name">
- <attr name="use_connectivity_server" type="bool" val="0"/>
- <attr name="connectivity_service_interval_ms" type="u32" val="2000"/>
  <attr name="data_request_timeout_ms" type="u32" val="1000"/>
  <attr name="data_rate_slowdown_factor" type="u32" val="1"/>
  <attr name="rte_script" type="string" val="/home/gjc/DUNE/fddaq-v4.2.0-a9/install/daq_app_rte.sh"/>
+ <attr name="controller_log_level" type="enum" val="INFO"/>
  <rel name="environment">
   <ref class="VariableSet" id="common-env"/>
  </rel>
  <rel name="segment" class="Segment" id="generated-segment"/>
  <rel name="detector_configuration" class="DetectorConfig" id="dummy-detector"/>
+ <rel name="opmon_uri" class="OpMonURI" id="local-opmon-uri"/>
 </obj>
 
 <obj class="Variable" id="CMD_FAC">
