@@ -126,9 +126,9 @@ struct CfgFixture
   {
     TLOG_DEBUG(4) << "Creating CfgFixture";
     setenv("DUNEDAQ_SYSTEM", systemName.c_str(), 1);
-    std::string oksConfig = "oksconflibs:test/config/hdf5write_test.data.xml:"+systemName;
+    std::string oksConfig = "oksconflibs:test/config/hdf5write_test.data.xml";
     std::string appName = "TestApp";
-    cfgMgr = std::make_shared<dunedaq::appfwk::ConfigurationManager>(oksConfig, appName);
+    cfgMgr = std::make_shared<dunedaq::appfwk::ConfigurationManager>(oksConfig, systemName, appName);
     modCfg = std::make_shared<dunedaq::appfwk::ModuleConfiguration>(cfgMgr);
     TLOG_DEBUG(4) << "Done with CfgFixture";
   }
