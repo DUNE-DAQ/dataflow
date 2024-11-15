@@ -71,7 +71,7 @@ DFOModule::init(std::shared_ptr<appfwk::ModuleConfiguration> mcfg)
 
   for (auto con : mdal->get_inputs()) {
     if (con->get_data_type() == datatype_to_string<dfmessages::DataflowHeartbeat>()) {
-      m_heartbeat_connection = con->UID();
+      m_heartbeat_connections.push_back( con->UID());
     }
     if (con->get_data_type() == datatype_to_string<dfmessages::TriggerDecision>()) {
       m_td_connection = con->UID();
@@ -83,7 +83,7 @@ DFOModule::init(std::shared_ptr<appfwk::ModuleConfiguration> mcfg)
     }
   }
 
-  if (m_heartbeat_connection == "") {
+  if (m_heartbeat_connections.size() == 0) {
     throw appfwk::MissingConnection(ERS_HERE, get_name(), datatype_to_string<dfmessages::DataflowHeartbeat>(), "input");
   }
   if (m_td_connection == "") {
@@ -96,7 +96,9 @@ DFOModule::init(std::shared_ptr<appfwk::ModuleConfiguration> mcfg)
   m_dfo_conf = mdal->get_configuration();
   m_dfo_id = mcfg->configuration_manager()->application()->UID();
   // these are just tests to check if the connections are ok
-  iom->get_receiver<dfmessages::DataflowHeartbeat>(m_heartbeat_connection);
+  for (auto& hb_conn : m_heartbeat_connections) {
+    iom->get_receiver<dfmessages::DataflowHeartbeat>(hb_conn);
+  }
   iom->get_receiver<dfmessages::TriggerDecision>(m_td_connection);
 
   TLOG_DEBUG(TLVL_ENTER_EXIT_METHODS) << get_name() << ": Exiting init() method";
@@ -134,9 +136,10 @@ DFOModule::do_start(const data_t& payload)
   m_last_heartbeat_received = m_last_td_received = std::chrono::steady_clock::now();
 
   auto iom = iomanager::IOManager::get();
-  iom->add_callback<dfmessages::DataflowHeartbeat>(
-    m_heartbeat_connection, std::bind(&DFOModule::receive_dataflow_heartbeat, this, std::placeholders::_1));
-
+  for (auto& hb_conn : m_heartbeat_connections) {
+    iom->add_callback<dfmessages::DataflowHeartbeat>(
+      hb_conn, std::bind(&DFOModule::receive_dataflow_heartbeat, this, std::placeholders::_1));
+  }
   iom->add_callback<dfmessages::TriggerDecision>(
     m_td_connection, std::bind(&DFOModule::receive_trigger_decision, this, std::placeholders::_1));
 
@@ -162,7 +165,9 @@ DFOModule::do_stop(const data_t& /*args*/)
     ++step_counter;
   }
 
-  iom->remove_callback<dfmessages::DataflowHeartbeat>(m_heartbeat_connection);
+  for (auto& hb_conn : m_heartbeat_connections) {
+    iom->remove_callback<dfmessages::DataflowHeartbeat>(hb_conn);
+  }
 
   std::list<std::shared_ptr<AssignedTriggerDecision>> remnants;
   for (auto& app : m_dataflow_availability) {
@@ -329,14 +334,14 @@ DFOModule::generate_opmon_data()
   info.set_decisions_received(m_received_decisions.exchange(0));
   info.set_decisions_sent(m_sent_decisions.exchange(0));
   info.set_heartbeat_updates(m_heartbeat_updates.exchange(0));
-  
+
   info.set_waiting_for_decision(m_waiting_for_decision.exchange(0));
   info.set_deciding_destination(m_deciding_destination.exchange(0));
   info.set_forwarding_decision(m_forwarding_decision.exchange(0));
-  
+
   info.set_waiting_for_heartbeat(m_waiting_for_heartbeat.exchange(0));
   info.set_processing_heartbeat(m_processing_heartbeat.exchange(0));
-  
+
   publish(std::move(info));
 
   std::lock_guard<std::mutex> guard(m_trigger_mutex);
@@ -354,27 +359,28 @@ DFOModule::receive_dataflow_heartbeat(const dfmessages::DataflowHeartbeat& heart
 {
   if (m_dataflow_availability.count(heartbeat.decision_destination) == 0) {
     TLOG_DEBUG(TLVL_CONFIG) << "Creating dataflow availability struct for uid " << heartbeat.decision_destination;
-    m_dataflow_availability[heartbeat.decision_destination] =
+    auto entry = m_dataflow_availability[heartbeat.decision_destination] =
       std::make_shared<TriggerRecordBuilderData>(heartbeat.decision_destination, m_busy_threshold, m_free_threshold);
+    register_node(heartbeat.decision_destination, entry);
   } else {
-    //TLOG() << TRBModuleAppUpdate(ERS_HERE, heartbeat.decision_destination, "Has reconnected");
+    // TLOG() << TRBModuleAppUpdate(ERS_HERE, heartbeat.decision_destination, "Has reconnected");
     auto app_it = m_dataflow_availability.find(heartbeat.decision_destination);
     app_it->second->set_in_error(false);
   }
 
   TLOG_DEBUG(TLVL_HEARTBEAT_RECEIVED) << get_name() << " Received DataflowHeartbeat for run " << heartbeat.run_number
-                                        << " (current run is " << m_run_number << ") from "
-                                        << heartbeat.decision_destination;
+                                      << " (current run is " << m_run_number << ") from "
+                                      << heartbeat.decision_destination;
   // add a check to see if the application data found
   if (heartbeat.run_number != m_run_number) {
-    std::ostringstream oss_source;
-    oss_source << "TRB at connection " << heartbeat.decision_destination;
-    dfmessages::trigger_number_t last_trigger = 0;
-    if (heartbeat.recent_completed_triggers.size() > 0) {
-      last_trigger = *heartbeat.recent_completed_triggers.rbegin();
-    }
-    ers::error(
-      DFOModuleRunNumberMismatch(ERS_HERE, heartbeat.run_number, m_run_number, oss_source.str(), last_trigger));
+    //std::ostringstream oss_source;
+    //oss_source << "TRB at connection " << heartbeat.decision_destination;
+    //dfmessages::trigger_number_t last_trigger = 0;
+    //if (heartbeat.recent_completed_triggers.size() > 0) {
+    //  last_trigger = *heartbeat.recent_completed_triggers.rbegin();
+    //}
+    //ers::error(
+    //  DFOModuleRunNumberMismatch(ERS_HERE, heartbeat.run_number, m_run_number, oss_source.str(), last_trigger));
     return;
   }
 
@@ -400,8 +406,7 @@ DFOModule::receive_dataflow_heartbeat(const dfmessages::DataflowHeartbeat& heart
       for (auto& app_check : m_dataflow_availability) {
         if (app_check.second->has_assignment(tn)) {
           TLOG_DEBUG(TLVL_HEARTBEAT_RECEIVED) << get_name() << " This DFO assigned trigger number " << tn << " to "
-                                                << app_check.first
-                 << ", but it was fulfilled by " << app_it->first;
+                                              << app_check.first << ", but it was fulfilled by " << app_it->first;
 
           wrong_trb = true;
           ++m_heartbeat_updates;
@@ -414,7 +419,7 @@ DFOModule::receive_dataflow_heartbeat(const dfmessages::DataflowHeartbeat& heart
 
       if (!wrong_trb) {
         TLOG_DEBUG(TLVL_HEARTBEAT_RECEIVED) << get_name() << " Recently-completed trigger number " << tn
-                                              << " was not found, either missed TD if inactive, or already completed.";
+                                            << " was not found, either missed TD if inactive, or already completed.";
       }
     }
   }
@@ -469,7 +474,7 @@ void
 DFOModule::notify_trigger(bool busy) const
 {
   auto start_time = std::chrono::steady_clock::now();
-  if (busy == m_last_notified_busy.load() && 
+  if (busy == m_last_notified_busy.load() &&
       std::chrono::duration_cast<std::chrono::milliseconds>(start_time - m_last_notified_busy_time) < m_busy_interval)
     return;
 

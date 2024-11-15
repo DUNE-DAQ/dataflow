@@ -127,7 +127,7 @@ private:
 
   // Connections
   std::shared_ptr<iomanager::SenderConcept<dfmessages::TriggerInhibit>> m_busy_sender;
-  std::string m_heartbeat_connection;
+  std::vector<std::string> m_heartbeat_connections;
   std::string m_td_connection;
   size_t m_td_send_retries;
   size_t m_busy_threshold;

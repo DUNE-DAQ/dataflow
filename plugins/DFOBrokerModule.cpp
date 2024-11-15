@@ -138,6 +138,7 @@ DFOBrokerModule::do_conf(const data_t&)
     std::lock_guard<std::mutex> lk(m_dfo_info_mutex);
     for (auto& dfo_pair : m_dfo_information) {
       if (dfo_pair.first == enabled_dfo_id) {
+        TLOG_DEBUG(TLVL_CONFIG) << get_name() << ": Enabling DFO " << initial_active_dfo->UID();
         dfo_pair.second.dfo_is_active = true;
       } else {
         dfo_pair.second.dfo_is_active = false;
@@ -201,7 +202,7 @@ DFOBrokerModule::do_stop(const data_t& /*args*/)
 
   m_thread.stop_working_thread();
   for (auto& dfo_info : m_dfo_information) {
-    dfo_info.second = DFOInfo();
+    dfo_info.second.recent_completions.clear();
   }
 
   TLOG() << get_name() << " successfully stopped";
@@ -235,7 +236,6 @@ DFOBrokerModule::generate_opmon_data()
   info.set_tokens_received(m_received_tokens.exchange(0));
   info.set_pending_trs(m_pending_trs.load());
   publish(std::move(info));
-
 }
 
 void
@@ -257,7 +257,6 @@ DFOBrokerModule::receive_trigger_complete_token(const dfmessages::TriggerDecisio
     return;
   }
 
-
   ++m_received_tokens;
   --m_pending_trs;
   {
@@ -276,7 +275,7 @@ DFOBrokerModule::receive_dfo_decision(const dfmessages::DFODecision& decision)
   TLOG_DEBUG(TLVL_TRIGDEC_RECEIVED) << get_name() << " Received DFODecision for trigger_number "
                                     << decision.trigger_decision.trigger_number << " and run "
                                     << decision.trigger_decision.run_number << " (current run is " << m_run_number
-                                    << ") from DFO " << decision.dfo_id << "( active DFO? " << std::boolalpha
+                                    << ") from DFO " << decision.dfo_id << " (active DFO? " << std::boolalpha
                                     << dfo_is_active(decision.dfo_id) << ")";
   if (decision.trigger_decision.run_number != m_run_number) {
     ers::error(DFOBrokerRunNumberMismatch(ERS_HERE,
@@ -291,7 +290,7 @@ DFOBrokerModule::receive_dfo_decision(const dfmessages::DFODecision& decision)
     return;
   }
 
-    ++m_pending_trs;
+  ++m_pending_trs;
   ++m_received_decisions;
   {
     std::lock_guard<std::mutex> lk(m_dfo_info_mutex);
