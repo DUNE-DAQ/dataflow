@@ -135,6 +135,7 @@ public:
     m_max_file_size = m_config_params->get_max_file_size();
     m_disable_unique_suffix = m_config_params->get_disable_unique_filename_suffix();
     m_free_space_safety_factor_for_write = m_config_params->get_free_space_safety_factor();
+    m_enable_compression = m_config_params->get_enable_compression();
     if (m_free_space_safety_factor_for_write < 1.1) {
       m_free_space_safety_factor_for_write = 1.1;
     }
@@ -394,6 +395,7 @@ private:
   size_t m_max_file_size;
   bool m_disable_unique_suffix;
   float m_free_space_safety_factor_for_write;
+  bool m_enable_compression;
 
   // std::unique_ptr<HDF5KeyTranslator> m_key_translator_ptr;
 
