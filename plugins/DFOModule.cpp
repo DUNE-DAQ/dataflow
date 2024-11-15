@@ -313,7 +313,7 @@ DFOModule::find_slot(const dfmessages::TriggerDecision& decision)
     if (minimum_occupied != m_dataflow_availability.end()) {
       output = minimum_occupied->second->make_assignment(decision);
       m_last_assignement_it = minimum_occupied;
-      ers::warning(AssignedToBusyApp(ERS_HERE, decision.trigger_number, minimum_occupied->first, minimum));
+      TLOG() << AssignedToBusyApp(ERS_HERE, decision.trigger_number, minimum_occupied->first, minimum);
     }
   }
 
