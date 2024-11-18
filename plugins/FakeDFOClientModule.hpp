@@ -83,6 +83,8 @@ private:
   // Statistics
   std::atomic<uint64_t> m_received_decisions;
   std::atomic<uint64_t> m_sent_tokens;
+  std::atomic<uint64_t> m_total_received_decisions;
+  std::atomic<uint64_t> m_total_sent_tokens;
 };
 } // namespace dfmodules
 } // namespace dunedaq

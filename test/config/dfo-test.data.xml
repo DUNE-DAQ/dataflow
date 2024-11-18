@@ -296,45 +296,39 @@
  <rel name="controller" class="RCApplication" id="trg-controller"/>
 </obj>
 
-<obj class="Service" id="daq-k8s-opmon-service">
- <attr name="protocol" type="string" val="stream"/>
- <attr name="port" type="u16" val="30092"/>
- <attr name="path" type="string" val="/opmon_stream"/>
-</obj>
-
 <obj class="Service" id="df-01_control">
  <attr name="protocol" type="string" val="rest"/>
- <attr name="port" type="u16" val="5601"/>
+ <attr name="port" type="u16" val="0"/>
 </obj>
 
 <obj class="Service" id="df-02_control">
  <attr name="protocol" type="string" val="rest"/>
- <attr name="port" type="u16" val="5602"/>
+ <attr name="port" type="u16" val="0"/>
 </obj>
 
 <obj class="Service" id="df-03_control">
  <attr name="protocol" type="string" val="rest"/>
- <attr name="port" type="u16" val="5603"/>
+ <attr name="port" type="u16" val="0"/>
 </obj>
 
 <obj class="Service" id="df-controller_control">
  <attr name="protocol" type="string" val="grpc"/>
- <attr name="port" type="u16" val="5600"/>
+ <attr name="port" type="u16" val="0"/>
 </obj>
 
 <obj class="Service" id="dfo-01_control">
  <attr name="protocol" type="string" val="rest"/>
- <attr name="port" type="u16" val="5604"/>
+ <attr name="port" type="u16" val="0"/>
 </obj>
 
 <obj class="Service" id="dfo-02_control">
  <attr name="protocol" type="string" val="rest"/>
- <attr name="port" type="u16" val="5605"/>
+ <attr name="port" type="u16" val="0"/>
 </obj>
 
 <obj class="Service" id="hsi-to-tc-app_control">
  <attr name="protocol" type="string" val="rest"/>
- <attr name="port" type="u16" val="5701"/>
+ <attr name="port" type="u16" val="0"/>
 </obj>
 
 <obj class="Service" id="local-opmon-service">
@@ -345,44 +339,41 @@
 
 <obj class="Service" id="mlt_control">
  <attr name="protocol" type="string" val="rest"/>
- <attr name="port" type="u16" val="5702"/>
+ <attr name="port" type="u16" val="0"/>
 </obj>
 
 <obj class="Service" id="tc-buffer-1_control">
  <attr name="protocol" type="string" val="rest"/>
- <attr name="port" type="u16" val="5704"/>
+ <attr name="port" type="u16" val="0"/>
 </obj>
 
 <obj class="Service" id="tc-maker-1_control">
  <attr name="protocol" type="string" val="rest"/>
- <attr name="port" type="u16" val="5703"/>
+ <attr name="port" type="u16" val="0"/>
 </obj>
 
 <obj class="Service" id="tp-stream-writer_control">
  <attr name="protocol" type="string" val="rest"/>
- <attr name="port" type="u16" val="5606"/>
+ <attr name="port" type="u16" val="0"/>
 </obj>
 
 <obj class="Service" id="trg-controller_control">
  <attr name="protocol" type="string" val="grpc"/>
- <attr name="port" type="u16" val="5700"/>
+ <attr name="port" type="u16" val="0"/>
 </obj>
 
 <obj class="Session" id="dfo-test">
  <attr name="data_request_timeout_ms" type="u32" val="1000"/>
  <attr name="data_rate_slowdown_factor" type="u32" val="1"/>
  <attr name="controller_log_level" type="enum" val="INFO"/>
- <rel name="environment">
-  <ref class="Variable" id="session-env-session-name-0"/>
-  <ref class="Variable" id="session-env-session-name-1"/>
+    <rel name="connectivity_service" class="ConnectivityService" id="local-connectivity-service-config"/>
+
+    <rel name="environment">
   <ref class="Variable" id="session-env-ers-verb"/>
   <ref class="Variable" id="session-env-ers-info"/>
   <ref class="Variable" id="session-env-ers-warning"/>
   <ref class="Variable" id="session-env-ers-error"/>
   <ref class="Variable" id="session-env-ers-fatal"/>
-  <ref class="Variable" id="session-env-connectivity-server"/>
-  <ref class="Variable" id="session-env-connectivity-port"/>
-  <ref class="Variable" id="daqapp-cli-configuration"/>
   <ref class="Variable" id="session-env-trace-file"/>
  </rel>
  <rel name="segment" class="Segment" id="root-segment"/>
@@ -454,21 +445,6 @@
  <rel name="trigger_inputs_handler" class="DataHandlerConf" id="def-ta-handler"/>
 </obj>
 
-<obj class="Variable" id="daqapp-cli-configuration">
- <attr name="name" type="string" val="DAQAPP_CLI_CONFIG_SVC"/>
- <attr name="value" type="string" val="oksconflibs:test/config/dfo-test.data.xml"/>
-</obj>
-
-<obj class="Variable" id="session-env-connectivity-port">
- <attr name="name" type="string" val="CONNECTION_PORT"/>
- <attr name="value" type="string" val="5000"/>
-</obj>
-
-<obj class="Variable" id="session-env-connectivity-server">
- <attr name="name" type="string" val="CONNECTION_SERVER"/>
- <attr name="value" type="string" val="localhost"/>
-</obj>
-
 <obj class="Variable" id="session-env-ers-error">
  <attr name="name" type="string" val="DUNEDAQ_ERS_ERROR"/>
  <attr name="value" type="string" val="erstrace,throttle,lstdout"/>
@@ -492,16 +468,6 @@
 <obj class="Variable" id="session-env-ers-warning">
  <attr name="name" type="string" val="DUNEDAQ_ERS_WARNING"/>
  <attr name="value" type="string" val="erstrace,throttle,lstdout"/>
-</obj>
-
-<obj class="Variable" id="session-env-session-name-0">
- <attr name="name" type="string" val="DUNEDAQ_PARTITION"/>
- <attr name="value" type="string" val="dfo-test"/>
-</obj>
-
-<obj class="Variable" id="session-env-session-name-1">
- <attr name="name" type="string" val="DUNEDAQ_SESSION"/>
- <attr name="value" type="string" val="dfo-test"/>
 </obj>
 
 <obj class="Variable" id="session-env-trace-file">

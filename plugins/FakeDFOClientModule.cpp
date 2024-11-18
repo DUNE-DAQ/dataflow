@@ -131,15 +131,26 @@ FakeDFOClientModule::do_stop(const data_t& /*args*/)
 
   m_stop_source.request_stop();
 
+  TLOG() << "Received " << m_total_received_decisions.load() << " TriggerDecisions, and sent " << m_total_sent_tokens.load()
+         << " TriggerDecisionTokens";
+
+  m_total_received_decisions.exchange(0);
+  m_total_sent_tokens.exchange(0);
+
   TLOG_DEBUG(TLVL_ENTER_EXIT_METHODS) << get_name() << ": Exiting do_stop() method";
 }
 
 void
 FakeDFOClientModule::generate_opmon_data()
 {
+  auto this_decisions_received = m_received_decisions.exchange(0);
+  auto this_tokens_sent = m_sent_tokens.exchange(0);
+  m_total_received_decisions += this_decisions_received;
+  m_total_sent_tokens += this_tokens_sent;
+
   opmon::FakeDFOClientInfo info;
-  info.set_decisions_received(m_received_decisions.exchange(0));
-  info.set_tokens_sent(m_sent_tokens.exchange(0));
+  info.set_decisions_received(this_decisions_received);
+  info.set_tokens_sent(this_tokens_sent);
   publish(std::move(info));
 }
 

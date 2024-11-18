@@ -396,6 +396,8 @@ DFOModule::receive_dataflow_heartbeat(const dfmessages::DataflowHeartbeat& heart
 
   app_it->second->update_completions_to_acknowledge_list(heartbeat.recent_completed_triggers);
   for (auto& tn : heartbeat.recent_completed_triggers) {
+    TLOG_DEBUG(TLVL_HEARTBEAT_RECEIVED) << get_name() << " Heartbeat message from " << heartbeat.decision_destination
+                                        << " reports trigger number " << tn << " as complete.";
     if (app_it->second->has_assignment(tn)) {
       auto dec_ptr = app_it->second->complete_assignment(tn, m_metadata_function);
       auto trigger_types = unpack_types(dec_ptr->decision.trigger_type);
