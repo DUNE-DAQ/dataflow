@@ -373,14 +373,14 @@ DFOModule::receive_dataflow_heartbeat(const dfmessages::DataflowHeartbeat& heart
                                       << heartbeat.decision_destination;
   // add a check to see if the application data found
   if (heartbeat.run_number != m_run_number) {
-    //std::ostringstream oss_source;
-    //oss_source << "TRB at connection " << heartbeat.decision_destination;
-    //dfmessages::trigger_number_t last_trigger = 0;
-    //if (heartbeat.recent_completed_triggers.size() > 0) {
-    //  last_trigger = *heartbeat.recent_completed_triggers.rbegin();
-    //}
-    //ers::error(
-    //  DFOModuleRunNumberMismatch(ERS_HERE, heartbeat.run_number, m_run_number, oss_source.str(), last_trigger));
+    std::ostringstream oss_source;
+    oss_source << "TRB at connection " << heartbeat.decision_destination;
+    dfmessages::trigger_number_t last_trigger = 0;
+    if (heartbeat.recent_completed_triggers.size() > 0) {
+      last_trigger = *heartbeat.recent_completed_triggers.rbegin();
+    }
+    TLOG(TLVL_HEARTBEAT_RECEIVED) <<
+      DFOModuleRunNumberMismatch(ERS_HERE, heartbeat.run_number, m_run_number, oss_source.str(), last_trigger);
     return;
   }
 

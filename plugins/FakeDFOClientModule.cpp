@@ -114,6 +114,8 @@ FakeDFOClientModule::do_start(const data_t&)
 {
   TLOG_DEBUG(TLVL_ENTER_EXIT_METHODS) << get_name() << ": Entering do_start() method";
 
+  m_stop_source = std::stop_source();
+
   auto iom = iomanager::IOManager::get();
   iom->add_callback<dfmessages::TriggerDecision>(
     m_td_connection, std::bind(&FakeDFOClientModule::receive_trigger_decision, this, std::placeholders::_1));
@@ -160,6 +162,7 @@ FakeDFOClientModule::wait_and_send_token(const dfmessages::TriggerDecision& deci
   bool sent = false;
 
   while (!sent && !stoken.stop_requested()) {
+    TLOG(TLVL_DISPATCH_TO_TRB) << get_name() << " Waiting for " << m_token_wait_us.count() << " microseconds";
     std::this_thread::sleep_for(m_token_wait_us);
     dfmessages::TriggerDecisionToken token;
     token.run_number = decision.run_number;
@@ -167,6 +170,8 @@ FakeDFOClientModule::wait_and_send_token(const dfmessages::TriggerDecision& deci
     token.trigger_number = decision.trigger_number;
 
     try {
+      TLOG(TLVL_DISPATCH_TO_TRB) << get_name() << " Sending token with run number " << token.run_number
+                                 << " and trigger number " << token.trigger_number;
       get_iom_sender<dfmessages::TriggerDecisionToken>(m_token_connection)
         ->send(std::move(token), m_send_token_timeout);
       sent = true;

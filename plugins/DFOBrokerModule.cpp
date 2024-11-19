@@ -277,6 +277,8 @@ DFOBrokerModule::receive_dfo_decision(const dfmessages::DFODecision& decision)
                                     << decision.trigger_decision.run_number << " (current run is " << m_run_number
                                     << ") from DFO " << decision.dfo_id << " (active DFO? " << std::boolalpha
                                     << dfo_is_active(decision.dfo_id) << ")";
+  TLOG_DEBUG(TLVL_TRIGDEC_RECEIVED) << get_name() << " DFODecision contains "
+                                    << decision.acknowledged_completions.size() << " TR completion acknowledgements.";
   if (decision.trigger_decision.run_number != m_run_number) {
     ers::error(DFOBrokerRunNumberMismatch(ERS_HERE,
                                           decision.trigger_decision.run_number,
@@ -328,6 +330,9 @@ DFOBrokerModule::send_heartbeat(bool skip_time_check)
   theHeartbeat.recent_completed_triggers = get_recent_completions();
   theHeartbeat.outstanding_decisions = get_outstanding_decisions();
   theHeartbeat.decision_destination = m_dfod_connection;
+
+  TLOG(TLVL_DISPATCH_TO_TRB) << get_name() << ": Heartbeat contains " << theHeartbeat.recent_completed_triggers.size()
+                             << " recently completed triggers, and " << theHeartbeat.outstanding_decisions.size() << " outstanding decisions.";
 
   try {
     get_iom_sender<dfmessages::DataflowHeartbeat>(m_heartbeat_connection)
