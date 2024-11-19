@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package dunedaq.dfmodules.opmon;
+
+
+// regular metric published byt the DFO
+message DFOBrokerInfo {
+
+  // counters 
+  uint64 heartbeats_sent = 1;
+  uint64 decisions_received = 2;
+  uint64 decisions_sent = 3;
+  uint64 tokens_received = 4;
+
+  uint64 pending_trs = 5;
+}

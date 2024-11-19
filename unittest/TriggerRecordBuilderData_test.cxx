@@ -7,8 +7,8 @@
  * received with this code.
  */
 
-#include "opmonlib/TestOpMonManager.hpp"
 #include "dfmodules/TriggerRecordBuilderData.hpp"
+#include "opmonlib/TestOpMonManager.hpp"
 
 #define BOOST_TEST_MODULE TriggerRecordBuilderData_test // NOLINT
 
@@ -111,7 +111,8 @@ BOOST_AUTO_TEST_CASE(Assignments)
     std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - assignment->assigned_time)
       .count();
 
-  BOOST_REQUIRE_CLOSE(static_cast<double>(trbd_p->average_latency(start_time).count()), static_cast<double>(latency), 5);
+  BOOST_REQUIRE_CLOSE(
+    static_cast<double>(trbd_p->average_latency(start_time).count()), static_cast<double>(latency), 5);
 
   auto null_got_assignment = trbd_p->get_assignment(2);
   BOOST_REQUIRE_EQUAL(null_got_assignment, nullptr);
@@ -123,7 +124,6 @@ BOOST_AUTO_TEST_CASE(Assignments)
   auto remnants = trbd_p->flush();
   BOOST_REQUIRE_EQUAL(trbd_p->used_slots(), 0);
   BOOST_REQUIRE_EQUAL(remnants.size(), 1);
-  
 }
 
 BOOST_AUTO_TEST_CASE(Exceptions)
@@ -183,6 +183,63 @@ BOOST_AUTO_TEST_CASE(Exceptions)
     trbd.add_assignment(err_assignment), NoSlotsAvailable, [](NoSlotsAvailable const&) { return true; });
 }
 
+template<typename T>
+bool
+contains(std::vector<T> vec, T val)
+{
+  for (auto& vv : vec) {
+    if (vv == val)
+      return true;
+  }
+  return false;
+}
 
+BOOST_AUTO_TEST_CASE(Acknowledgements)
+{
+  std::vector<dunedaq::dfmessages::trigger_number_t> list1{ 1, 3, 5, 7, 9 };
+  std::vector<dunedaq::dfmessages::trigger_number_t> list2{ 2, 4, 6 };
+  std::vector<dunedaq::dfmessages::trigger_number_t> list3{ 5, 7, 9, 11, 13 };
+
+  TriggerRecordBuilderData trbd("test", 2);
+
+  trbd.update_completions_to_acknowledge_list(list1);
+  auto check1 = trbd.extract_completions_to_acknowledge();
+  BOOST_REQUIRE_EQUAL(list1.size(), check1.size());
+  for (size_t ii = 0; ii < list1.size(); ++ii) {
+    BOOST_REQUIRE(contains(check1, list1[ii]));
+  }
+  auto empty1 = trbd.extract_completions_to_acknowledge();
+  BOOST_REQUIRE_EQUAL(empty1.size(), 0);
+
+  trbd.update_completions_to_acknowledge_list(list1);
+  trbd.update_completions_to_acknowledge_list(list2);
+  auto check2 = trbd.extract_completions_to_acknowledge();
+  BOOST_REQUIRE_EQUAL(list1.size() + list2.size(), check2.size());
+  for (size_t ii = 0; ii < list1.size(); ++ii) {
+    BOOST_REQUIRE(contains(check2, list1[ii]));
+  }
+  for (size_t ii = 0; ii < list2.size(); ++ii) {
+    BOOST_REQUIRE(contains(check2, list2[ii]));
+  }
+  auto empty2 = trbd.extract_completions_to_acknowledge();
+  BOOST_REQUIRE_EQUAL(empty2.size(), 0);
+
+  trbd.update_completions_to_acknowledge_list(list1);
+  trbd.update_completions_to_acknowledge_list(list2);
+  trbd.update_completions_to_acknowledge_list(list3);
+  auto check3 = trbd.extract_completions_to_acknowledge();
+  BOOST_REQUIRE_EQUAL(list1.size() + list2.size() + 2, check3.size());
+  for (size_t ii = 0; ii < list1.size(); ++ii) {
+    BOOST_REQUIRE(contains(check3, list1[ii]));
+  }
+  for (size_t ii = 0; ii < list2.size(); ++ii) {
+    BOOST_REQUIRE(contains(check3, list2[ii]));
+  }
+  for (size_t ii = 0; ii < list3.size(); ++ii) {
+    BOOST_REQUIRE(contains(check3, list3[ii]));
+  }
+  auto empty3 = trbd.extract_completions_to_acknowledge();
+  BOOST_REQUIRE_EQUAL(empty3.size(), 0);
+}
 
 BOOST_AUTO_TEST_SUITE_END()

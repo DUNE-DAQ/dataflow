@@ -1,0 +1,478 @@
+<?xml version="1.0" encoding="ASCII"?>
+
+<!-- oks-data version 2.2 -->
+
+
+<!DOCTYPE oks-data [
+  <!ELEMENT oks-data (info, (include)?, (comments)?, (obj)+)>
+  <!ELEMENT info EMPTY>
+  <!ATTLIST info
+      name CDATA #IMPLIED
+      type CDATA #IMPLIED
+      num-of-items CDATA #REQUIRED
+      oks-format CDATA #FIXED "data"
+      oks-version CDATA #REQUIRED
+      created-by CDATA #IMPLIED
+      created-on CDATA #IMPLIED
+      creation-time CDATA #IMPLIED
+      last-modified-by CDATA #IMPLIED
+      last-modified-on CDATA #IMPLIED
+      last-modification-time CDATA #IMPLIED
+  >
+  <!ELEMENT include (file)*>
+  <!ELEMENT file EMPTY>
+  <!ATTLIST file
+      path CDATA #REQUIRED
+  >
+  <!ELEMENT comments (comment)*>
+  <!ELEMENT comment EMPTY>
+  <!ATTLIST comment
+      creation-time CDATA #REQUIRED
+      created-by CDATA #REQUIRED
+      created-on CDATA #REQUIRED
+      author CDATA #REQUIRED
+      text CDATA #REQUIRED
+  >
+  <!ELEMENT obj (attr | rel)*>
+  <!ATTLIST obj
+      class CDATA #REQUIRED
+      id CDATA #REQUIRED
+  >
+  <!ELEMENT attr (data)*>
+  <!ATTLIST attr
+      name CDATA #REQUIRED
+      type (bool|s8|u8|s16|u16|s32|u32|s64|u64|float|double|date|time|string|uid|enum|class|-) "-"
+      val CDATA ""
+  >
+  <!ELEMENT data EMPTY>
+  <!ATTLIST data
+      val CDATA #REQUIRED
+  >
+  <!ELEMENT rel (ref)*>
+  <!ATTLIST rel
+      name CDATA #REQUIRED
+      class CDATA ""
+      id CDATA ""
+  >
+  <!ELEMENT ref EMPTY>
+  <!ATTLIST ref
+      class CDATA #REQUIRED
+      id CDATA #REQUIRED
+  >
+]>
+
+<oks-data>
+
+<info name="" type="" num-of-items="53" oks-format="data" oks-version="862f2957270" created-by="gjc" created-on="thinkpad" creation-time="20231207T105549" last-modified-by="eflumerf" last-modified-on="ironvirt9.IRONDOMAIN.local" last-modification-time="20241113T195137"/>
+
+<include>
+ <file path="schema/confmodel/dunedaq.schema.xml"/>
+ <file path="config/daqsystemtest/ccm.data.xml"/>
+ <file path="config/daqsystemtest/fsm.data.xml"/>
+ <file path="config/daqsystemtest/hosts.data.xml"/>
+ <file path="schema/appmodel/application.schema.xml"/>
+ <file path="schema/appmodel/trigger.schema.xml"/>
+ <file path="config/daqsystemtest/connections.data.xml"/>
+ <file path="config/daqsystemtest/moduleconfs.data.xml"/>
+</include>
+
+<comments>
+ <comment creation-time="20240826T084126" created-by="maroda" created-on="np04-srv-015.cern.ch" author="maroda" text="Correct cern stream"/>
+ <comment creation-time="20240826T195953" created-by="eflumerf" created-on="ironvirt9.mshome.net" author="eflumerf" text="Reformat"/>
+ <comment creation-time="20240826T201110" created-by="eflumerf" created-on="ironvirt9.mshome.net" author="eflumerf" text="Fix client TD queue"/>
+</comments>
+
+
+<obj class="DFHWConf" id="dfhw-01">
+ <rel name="uses">
+  <ref class="StorageDevice" id="storage-01"/>
+ </rel>
+</obj>
+
+<obj class="DFOApplication" id="dfo-01">
+ <attr name="application_name" type="string" val="daq_application"/>
+ <rel name="runs_on" class="VirtualHost" id="vlocalhost"/>
+ <rel name="exposes_service">
+  <ref class="Service" id="dfo-01_control"/>
+ </rel>
+ <rel name="opmon_conf" class="OpMonConf" id="slow-all-monitoring"/>
+ <rel name="network_rules">
+  <ref class="NetworkConnectionRule" id="td-dfo-net-rule"/>
+  <ref class="NetworkConnectionRule" id="ti-net-rule"/>
+  <ref class="NetworkConnectionRule" id="df-hb-net-rule"/>
+ </rel>
+ <rel name="dfo" class="DFOConf" id="dfoconf-02"/>
+</obj>
+
+<obj class="DFOApplication" id="dfo-02">
+ <attr name="application_name" type="string" val="daq_application"/>
+ <rel name="runs_on" class="VirtualHost" id="vlocalhost"/>
+ <rel name="exposes_service">
+  <ref class="Service" id="dfo-02_control"/>
+ </rel>
+ <rel name="opmon_conf" class="OpMonConf" id="slow-all-monitoring"/>
+ <rel name="network_rules">
+  <ref class="NetworkConnectionRule" id="td-dfo-net-rule"/>
+  <ref class="NetworkConnectionRule" id="ti-net-rule"/>
+  <ref class="NetworkConnectionRule" id="df-hb-net-rule"/>
+ </rel>
+ <rel name="dfo" class="DFOConf" id="dfoconf-02"/>
+</obj>
+
+<obj class="DFOBrokerConf" id="broker-01">
+ <attr name="send_heartbeat_interval_ms" type="u32" val="1000"/>
+ <attr name="send_heartbeat_timeout_ms" type="u32" val="1000"/>
+ <attr name="td_timeout_ms" type="u32" val="1000"/>
+ <attr name="stop_timeout_ms" type="u32" val="5000"/>
+ <rel name="initial_active_dfo" class="DFOApplication" id="dfo-01"/>
+</obj>
+
+<obj class="DFOConf" id="dfoconf-02">
+ <attr name="general_queue_timeout_ms" type="u32" val="100"/>
+ <attr name="stop_timeout_ms" type="u32" val="100"/>
+ <attr name="td_send_retries" type="s32" val="5"/>
+ <attr name="busy_threshold" type="s32" val="20"/>
+ <attr name="free_threshold" type="s32" val="10"/>
+ <attr name="busy_interval_ms" type="u32" val="1000"/>
+</obj>
+
+<obj class="DetectorConfig" id="dummy-detector">
+ <attr name="tpg_channel_map" type="string" val="PD2HDChannelMap"/>
+ <attr name="clock_speed_hz" type="u32" val="62500000"/>
+ <attr name="op_env" type="string" val="test"/>
+ <attr name="offline_data_stream" type="string" val="cosmics"/>
+</obj>
+
+<obj class="FakeDFOClientConf" id="client-01">
+ <attr name="token_wait_microseconds" type="u32" val="1000"/>
+ <attr name="send_token_timeout_milliseconds" type="u32" val="1000"/>
+</obj>
+
+<obj class="FakeDFOTestApplication" id="df-01">
+ <attr name="application_name" type="string" val="daq_application"/>
+ <rel name="runs_on" class="VirtualHost" id="vlocalhost"/>
+ <rel name="exposes_service">
+  <ref class="Service" id="df-01_control"/>
+ </rel>
+ <rel name="opmon_conf" class="OpMonConf" id="slow-all-monitoring"/>
+ <rel name="source_id" class="SourceIDConf" id="srcid-df-01"/>
+ <rel name="queue_rules">
+  <ref class="QueueConnectionRule" id="token-queue-rule"/>
+  <ref class="QueueConnectionRule" id="client-td-queue-rule"/>
+ </rel>
+ <rel name="network_rules">
+  <ref class="NetworkConnectionRule" id="dfo-decision-net-rule"/>
+  <ref class="NetworkConnectionRule" id="df-hb-net-rule"/>
+ </rel>
+ <rel name="broker" class="DFOBrokerConf" id="broker-01"/>
+ <rel name="dfoclient" class="FakeDFOClientConf" id="client-01"/>
+</obj>
+
+<obj class="FakeDFOTestApplication" id="df-02">
+ <attr name="application_name" type="string" val="daq_application"/>
+ <rel name="runs_on" class="VirtualHost" id="vlocalhost"/>
+ <rel name="exposes_service">
+  <ref class="Service" id="df-02_control"/>
+ </rel>
+ <rel name="opmon_conf" class="OpMonConf" id="slow-all-monitoring"/>
+ <rel name="source_id" class="SourceIDConf" id="srcid-df-02"/>
+ <rel name="queue_rules">
+  <ref class="QueueConnectionRule" id="token-queue-rule"/>
+  <ref class="QueueConnectionRule" id="client-td-queue-rule"/>
+ </rel>
+ <rel name="network_rules">
+  <ref class="NetworkConnectionRule" id="dfo-decision-net-rule"/>
+  <ref class="NetworkConnectionRule" id="df-hb-net-rule"/>
+ </rel>
+ <rel name="broker" class="DFOBrokerConf" id="broker-01"/>
+ <rel name="dfoclient" class="FakeDFOClientConf" id="client-01"/>
+</obj>
+
+<obj class="FakeDFOTestApplication" id="df-03">
+ <attr name="application_name" type="string" val="daq_application"/>
+ <rel name="runs_on" class="VirtualHost" id="vlocalhost"/>
+ <rel name="exposes_service">
+  <ref class="Service" id="df-03_control"/>
+ </rel>
+ <rel name="opmon_conf" class="OpMonConf" id="slow-all-monitoring"/>
+ <rel name="source_id" class="SourceIDConf" id="srcid-df-03"/>
+ <rel name="queue_rules">
+  <ref class="QueueConnectionRule" id="token-queue-rule"/>
+  <ref class="QueueConnectionRule" id="client-td-queue-rule"/>
+ </rel>
+ <rel name="network_rules">
+  <ref class="NetworkConnectionRule" id="dfo-decision-net-rule"/>
+  <ref class="NetworkConnectionRule" id="df-hb-net-rule"/>
+ </rel>
+ <rel name="broker" class="DFOBrokerConf" id="broker-01"/>
+ <rel name="dfoclient" class="FakeDFOClientConf" id="client-01"/>
+</obj>
+
+<obj class="MLTApplication" id="mlt">
+ <attr name="application_name" type="string" val="daq_application"/>
+ <rel name="runs_on" class="VirtualHost" id="vlocalhost"/>
+ <rel name="exposes_service">
+  <ref class="Service" id="triggerCandidates"/>
+  <ref class="Service" id="triggerInhibits"/>
+  <ref class="Service" id="dataRequests"/>
+  <ref class="Service" id="mlt_control"/>
+ </rel>
+ <rel name="opmon_conf" class="OpMonConf" id="slow-all-monitoring"/>
+ <rel name="source_id" class="SourceIDConf" id="tc-srcid-1"/>
+ <rel name="queue_rules">
+  <ref class="QueueConnectionRule" id="tc-queue-rule"/>
+  <ref class="QueueConnectionRule" id="td-queue-rule"/>
+ </rel>
+ <rel name="network_rules">
+  <ref class="NetworkConnectionRule" id="tc-net-rule"/>
+  <ref class="NetworkConnectionRule" id="ti-net-rule"/>
+  <ref class="NetworkConnectionRule" id="td-dfo-net-rule"/>
+  <ref class="NetworkConnectionRule" id="data-req-trig-net-rule"/>
+  <ref class="NetworkConnectionRule" id="ts-net-rule"/>
+ </rel>
+ <rel name="data_subscriber" class="DataReaderConf" id="tc-subscriber-1"/>
+ <rel name="trigger_inputs_handler" class="DataHandlerConf" id="def-tc-handler"/>
+ <rel name="mlt_conf" class="MLTConf" id="mlt-conf-01"/>
+ <rel name="standalone_candidate_maker_confs">
+  <ref class="RandomTCMakerConf" id="random-tc-generator"/>
+ </rel>
+</obj>
+
+<obj class="MLTConf" id="mlt-conf-01">
+ <attr name="template_for" type="class" val="MLTModule"/>
+ <attr name="latency_monitoring" type="bool" val="1"/>
+ <rel name="initial_active_dfo" class="DFOApplication" id="dfo-01"/>
+</obj>
+
+<obj class="QueueConnectionRule" id="client-td-queue-rule">
+ <attr name="destination_class" type="class" val="FakeDFOClientModule"/>
+ <rel name="descriptor" class="QueueDescriptor" id="td-input"/>
+</obj>
+
+<obj class="RCApplication" id="df-controller">
+ <attr name="application_name" type="string" val="drunc-controller"/>
+ <rel name="runs_on" class="VirtualHost" id="vlocalhost"/>
+ <rel name="exposes_service">
+  <ref class="Service" id="df-controller_control"/>
+ </rel>
+ <rel name="opmon_conf" class="OpMonConf" id="slow-all-monitoring"/>
+ <rel name="fsm" class="FSMconfiguration" id="FSMconfiguration_noAction"/>
+</obj>
+
+<obj class="RCApplication" id="trg-controller">
+ <attr name="application_name" type="string" val="drunc-controller"/>
+ <rel name="runs_on" class="VirtualHost" id="vlocalhost"/>
+ <rel name="exposes_service">
+  <ref class="Service" id="trg-controller_control"/>
+ </rel>
+ <rel name="opmon_conf" class="OpMonConf" id="slow-all-monitoring"/>
+ <rel name="fsm" class="FSMconfiguration" id="FSMconfiguration_noAction"/>
+</obj>
+
+<obj class="Segment" id="df-segment">
+ <rel name="applications">
+  <ref class="DFOApplication" id="dfo-01"/>
+  <ref class="DFOApplication" id="dfo-02"/>
+  <ref class="FakeDFOTestApplication" id="df-01"/>
+  <ref class="FakeDFOTestApplication" id="df-02"/>
+  <ref class="FakeDFOTestApplication" id="df-03"/>
+ </rel>
+ <rel name="controller" class="RCApplication" id="df-controller"/>
+</obj>
+
+<obj class="Segment" id="root-segment">
+ <rel name="segments">
+  <ref class="Segment" id="df-segment"/>
+  <ref class="Segment" id="trg-segment"/>
+ </rel>
+ <rel name="controller" class="RCApplication" id="root-controller"/>
+</obj>
+
+<obj class="Segment" id="trg-segment">
+ <rel name="applications">
+  <ref class="TriggerApplication" id="tc-maker-1"/>
+  <ref class="MLTApplication" id="mlt"/>
+ </rel>
+ <rel name="controller" class="RCApplication" id="trg-controller"/>
+</obj>
+
+<obj class="Service" id="df-01_control">
+ <attr name="protocol" type="string" val="rest"/>
+ <attr name="port" type="u16" val="0"/>
+</obj>
+
+<obj class="Service" id="df-02_control">
+ <attr name="protocol" type="string" val="rest"/>
+ <attr name="port" type="u16" val="0"/>
+</obj>
+
+<obj class="Service" id="df-03_control">
+ <attr name="protocol" type="string" val="rest"/>
+ <attr name="port" type="u16" val="0"/>
+</obj>
+
+<obj class="Service" id="df-controller_control">
+ <attr name="protocol" type="string" val="grpc"/>
+ <attr name="port" type="u16" val="0"/>
+</obj>
+
+<obj class="Service" id="dfo-01_control">
+ <attr name="protocol" type="string" val="rest"/>
+ <attr name="port" type="u16" val="0"/>
+</obj>
+
+<obj class="Service" id="dfo-02_control">
+ <attr name="protocol" type="string" val="rest"/>
+ <attr name="port" type="u16" val="0"/>
+</obj>
+
+<obj class="Service" id="hsi-to-tc-app_control">
+ <attr name="protocol" type="string" val="rest"/>
+ <attr name="port" type="u16" val="0"/>
+</obj>
+
+<obj class="Service" id="local-opmon-service">
+ <attr name="protocol" type="string" val="file"/>
+ <attr name="port" type="u16" val="0"/>
+ <attr name="path" type="string" val="info.json"/>
+</obj>
+
+<obj class="Service" id="mlt_control">
+ <attr name="protocol" type="string" val="rest"/>
+ <attr name="port" type="u16" val="0"/>
+</obj>
+
+<obj class="Service" id="tc-buffer-1_control">
+ <attr name="protocol" type="string" val="rest"/>
+ <attr name="port" type="u16" val="0"/>
+</obj>
+
+<obj class="Service" id="tc-maker-1_control">
+ <attr name="protocol" type="string" val="rest"/>
+ <attr name="port" type="u16" val="0"/>
+</obj>
+
+<obj class="Service" id="tp-stream-writer_control">
+ <attr name="protocol" type="string" val="rest"/>
+ <attr name="port" type="u16" val="0"/>
+</obj>
+
+<obj class="Service" id="trg-controller_control">
+ <attr name="protocol" type="string" val="grpc"/>
+ <attr name="port" type="u16" val="0"/>
+</obj>
+
+<obj class="Session" id="dfo-test">
+ <attr name="data_request_timeout_ms" type="u32" val="1000"/>
+ <attr name="data_rate_slowdown_factor" type="u32" val="1"/>
+ <attr name="controller_log_level" type="enum" val="INFO"/>
+    <rel name="connectivity_service" class="ConnectivityService" id="local-connectivity-service-config"/>
+
+    <rel name="environment">
+  <ref class="Variable" id="session-env-ers-verb"/>
+  <ref class="Variable" id="session-env-ers-info"/>
+  <ref class="Variable" id="session-env-ers-warning"/>
+  <ref class="Variable" id="session-env-ers-error"/>
+  <ref class="Variable" id="session-env-ers-fatal"/>
+  <ref class="Variable" id="session-env-trace-file"/>
+ </rel>
+ <rel name="segment" class="Segment" id="root-segment"/>
+ <rel name="infrastructure_applications">
+  <ref class="ConnectionService" id="local-connection-server"/>
+ </rel>
+ <rel name="detector_configuration" class="DetectorConfig" id="dummy-detector"/>
+ <rel name="opmon_uri" class="OpMonURI" id="local-opmon-uri"/>
+</obj>
+
+<obj class="SourceIDConf" id="hsi-tc-srcid-1">
+ <attr name="sid" type="u32" val="2"/>
+ <attr name="subsystem" type="enum" val="Trigger"/>
+</obj>
+
+<obj class="SourceIDConf" id="srcid-df-01">
+ <attr name="sid" type="u32" val="1"/>
+ <attr name="subsystem" type="enum" val="TR_Builder"/>
+</obj>
+
+<obj class="SourceIDConf" id="srcid-df-02">
+ <attr name="sid" type="u32" val="2"/>
+ <attr name="subsystem" type="enum" val="TR_Builder"/>
+</obj>
+
+<obj class="SourceIDConf" id="srcid-df-03">
+ <attr name="sid" type="u32" val="3"/>
+ <attr name="subsystem" type="enum" val="TR_Builder"/>
+</obj>
+
+<obj class="SourceIDConf" id="srcid-tp-stream-writer">
+ <attr name="sid" type="u32" val="4"/>
+ <attr name="subsystem" type="enum" val="TR_Builder"/>
+</obj>
+
+<obj class="SourceIDConf" id="ta-srcid-1">
+ <attr name="sid" type="u32" val="1100"/>
+ <attr name="subsystem" type="enum" val="Trigger"/>
+</obj>
+
+<obj class="SourceIDConf" id="tc-srcid-1">
+ <attr name="sid" type="u32" val="10000"/>
+ <attr name="subsystem" type="enum" val="Trigger"/>
+</obj>
+
+<obj class="StorageDevice" id="storage-01">
+ <attr name="storage" type="u32" val="1000"/>
+</obj>
+
+<obj class="TriggerApplication" id="tc-maker-1">
+ <attr name="application_name" type="string" val="daq_application"/>
+ <rel name="runs_on" class="VirtualHost" id="vlocalhost"/>
+ <rel name="exposes_service">
+  <ref class="Service" id="tc-maker-1_control"/>
+  <ref class="Service" id="triggerActivities"/>
+  <ref class="Service" id="dataRequests"/>
+ </rel>
+ <rel name="opmon_conf" class="OpMonConf" id="slow-all-monitoring"/>
+ <rel name="source_id" class="SourceIDConf" id="ta-srcid-1"/>
+ <rel name="queue_rules">
+  <ref class="QueueConnectionRule" id="ta-queue-rule"/>
+ </rel>
+ <rel name="network_rules">
+  <ref class="NetworkConnectionRule" id="ta-net-rule"/>
+  <ref class="NetworkConnectionRule" id="tc-net-rule"/>
+  <ref class="NetworkConnectionRule" id="data-req-trig-net-rule"/>
+ </rel>
+ <rel name="data_subscriber" class="DataReaderConf" id="ta-subscriber-1"/>
+ <rel name="trigger_inputs_handler" class="DataHandlerConf" id="def-ta-handler"/>
+</obj>
+
+<obj class="Variable" id="session-env-ers-error">
+ <attr name="name" type="string" val="DUNEDAQ_ERS_ERROR"/>
+ <attr name="value" type="string" val="erstrace,throttle,lstdout"/>
+</obj>
+
+<obj class="Variable" id="session-env-ers-fatal">
+ <attr name="name" type="string" val="DUNEDAQ_ERS_FATAL"/>
+ <attr name="value" type="string" val="erstrace,lstdout"/>
+</obj>
+
+<obj class="Variable" id="session-env-ers-info">
+ <attr name="name" type="string" val="DUNEDAQ_ERS_INFO"/>
+ <attr name="value" type="string" val="erstrace,throttle,lstdout"/>
+</obj>
+
+<obj class="Variable" id="session-env-ers-verb">
+ <attr name="name" type="string" val="DUNEDAQ_ERS_VERBOSITY_LEVEL"/>
+ <attr name="value" type="string" val="1"/>
+</obj>
+
+<obj class="Variable" id="session-env-ers-warning">
+ <attr name="name" type="string" val="DUNEDAQ_ERS_WARNING"/>
+ <attr name="value" type="string" val="erstrace,throttle,lstdout"/>
+</obj>
+
+<obj class="Variable" id="session-env-trace-file">
+ <attr name="name" type="string" val="TRACE_FILE"/>
+ <attr name="value" type="string" val="/tmp/trace_buffer_dunedaq"/>
+</obj>
+
+</oks-data>

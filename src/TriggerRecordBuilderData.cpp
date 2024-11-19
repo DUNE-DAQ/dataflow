@@ -33,7 +33,8 @@ TriggerRecordBuilderData::TriggerRecordBuilderData(std::string connection_name, 
   , m_is_busy(false)
   , m_in_error(false)
   , m_connection_name(connection_name)
-{}
+{
+}
 
 TriggerRecordBuilderData::TriggerRecordBuilderData(std::string connection_name,
                                                    size_t busy_threshold,
@@ -46,6 +47,32 @@ TriggerRecordBuilderData::TriggerRecordBuilderData(std::string connection_name,
 {
   if (busy_threshold < free_threshold)
     throw dfmodules::DFOThresholdsNotConsistent(ERS_HERE, busy_threshold, free_threshold);
+}
+
+std::shared_ptr<AssignedTriggerDecision>
+TriggerRecordBuilderData::get_assignment(daqdataformats::trigger_number_t trigger_number) const
+{
+  auto lk = std::lock_guard<std::mutex>(m_assigned_trigger_decisions_mutex);
+  for (auto ptr : m_assigned_trigger_decisions) {
+    if (ptr->decision.trigger_number == trigger_number) {
+      return ptr;
+    }
+  }
+
+  return nullptr;
+}
+
+bool
+TriggerRecordBuilderData::has_assignment(daqdataformats::trigger_number_t trigger_number) const
+{
+  auto lk = std::lock_guard<std::mutex>(m_assigned_trigger_decisions_mutex);
+  for (auto ptr : m_assigned_trigger_decisions) {
+    if (ptr->decision.trigger_number == trigger_number) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 std::shared_ptr<AssignedTriggerDecision>
@@ -68,16 +95,25 @@ TriggerRecordBuilderData::extract_assignment(daqdataformats::trigger_number_t tr
 }
 
 std::shared_ptr<AssignedTriggerDecision>
-TriggerRecordBuilderData::get_assignment(daqdataformats::trigger_number_t trigger_number) const
+TriggerRecordBuilderData::make_assignment(dfmessages::TriggerDecision decision)
+{
+  return std::make_shared<AssignedTriggerDecision>(decision, m_connection_name);
+}
+
+void
+TriggerRecordBuilderData::add_assignment(std::shared_ptr<AssignedTriggerDecision> assignment)
 {
   auto lk = std::lock_guard<std::mutex>(m_assigned_trigger_decisions_mutex);
-  for (auto ptr : m_assigned_trigger_decisions) {
-    if (ptr->decision.trigger_number == trigger_number) {
-      return ptr;
-    }
-  }
 
-  return nullptr;
+  if (is_in_error())
+    throw NoSlotsAvailable(ERS_HERE, assignment->decision.trigger_number, m_connection_name);
+
+  m_assigned_trigger_decisions.push_back(assignment);
+  TLOG_DEBUG(13) << "Size of assigned_trigger_decision list is " << m_assigned_trigger_decisions.size();
+
+  if (m_assigned_trigger_decisions.size() >= m_busy_threshold.load()) {
+    m_is_busy.store(true);
+  }
 }
 
 std::shared_ptr<AssignedTriggerDecision>
@@ -113,11 +149,11 @@ TriggerRecordBuilderData::complete_assignment(daqdataformats::trigger_number_t t
 
   opmon::TRCompleteInfo i;
   i.set_completion_time(completion_time.count());
-  i.set_tr_number( dec_ptr->decision.trigger_number );
-  i.set_run_number( dec_ptr->decision.run_number );
-  i.set_trigger_type( dec_ptr->decision.trigger_type );
-  publish( std::move(i), {}, opmonlib::to_level(opmonlib::EntryOpMonLevel::kEventDriven) );
-  
+  i.set_tr_number(dec_ptr->decision.trigger_number);
+  i.set_run_number(dec_ptr->decision.run_number);
+  i.set_trigger_type(dec_ptr->decision.trigger_type);
+  publish(std::move(i), {}, opmonlib::to_level(opmonlib::EntryOpMonLevel::kEventDriven));
+
   return dec_ptr;
 }
 
@@ -143,33 +179,11 @@ TriggerRecordBuilderData::flush()
   return ret;
 }
 
-std::shared_ptr<AssignedTriggerDecision>
-TriggerRecordBuilderData::make_assignment(dfmessages::TriggerDecision decision)
-{
-  return std::make_shared<AssignedTriggerDecision>(decision, m_connection_name);
-}
-
 void
-TriggerRecordBuilderData::add_assignment(std::shared_ptr<AssignedTriggerDecision> assignment)
-{
-  auto lk = std::lock_guard<std::mutex>(m_assigned_trigger_decisions_mutex);
-
-  if (is_in_error())
-    throw NoSlotsAvailable(ERS_HERE, assignment->decision.trigger_number, m_connection_name);
-
-  m_assigned_trigger_decisions.push_back(assignment);
-  TLOG_DEBUG(13) << "Size of assigned_trigger_decision list is " << m_assigned_trigger_decisions.size();
-
-  if (m_assigned_trigger_decisions.size() >= m_busy_threshold.load()) {
-    m_is_busy.store(true);
-  }
-}
-
-void
-TriggerRecordBuilderData::generate_opmon_data() 
+TriggerRecordBuilderData::generate_opmon_data()
 {
   metric_t info;
-  info.set_min_time_since_assignment( std::numeric_limits<time_counter_t>::max() );
+  info.set_min_time_since_assignment(std::numeric_limits<time_counter_t>::max());
   info.set_max_time_since_assignment(0);
 
   time_counter_t time = 0;
@@ -187,13 +201,14 @@ TriggerRecordBuilderData::generate_opmon_data()
       info.set_max_time_since_assignment(us_since_assignment.count());
   }
   lk.unlock();
-  
+
   info.set_total_time_since_assignment(time);
 
   // estimate of the capcity
   auto completed_trigger_records = m_complete_counter.exchange(0);
-  if ( completed_trigger_records > 0 ) {
-    m_last_average_time = 1e-6*0.5*(m_min_complete_time.exchange(0) + m_max_complete_time.exchange(0)); // in seconds     
+  if (completed_trigger_records > 0) {
+    m_last_average_time =
+      1e-6 * 0.5 * (m_min_complete_time.exchange(0) + m_max_complete_time.exchange(0)); // in seconds
   }
 
   if ( m_last_average_time > 0. ) {
@@ -202,7 +217,6 @@ TriggerRecordBuilderData::generate_opmon_data()
   }
   
   publish(std::move(info));
-  
 }
 
 std::chrono::microseconds
@@ -220,6 +234,25 @@ TriggerRecordBuilderData::average_latency(std::chrono::steady_clock::time_point 
   }
 
   return sum / count;
+}
+
+std::vector<dfmessages::trigger_number_t>
+TriggerRecordBuilderData::extract_completions_to_acknowledge()
+{
+  std::lock_guard<std::mutex> lk(m_completions_to_acknowledge_mutex);
+  std::vector<dfmessages::trigger_number_t> output(completions_to_acknowledge.begin(),
+                                                   completions_to_acknowledge.end());
+  completions_to_acknowledge.clear();
+  return output;
+}
+
+void
+TriggerRecordBuilderData::update_completions_to_acknowledge_list(std::vector<dfmessages::trigger_number_t> completions)
+{
+  std::lock_guard<std::mutex> lk(m_completions_to_acknowledge_mutex);
+  for (auto& tn : completions) {
+    completions_to_acknowledge.insert(tn);
+  }
 }
 
 } // namespace dfmodules

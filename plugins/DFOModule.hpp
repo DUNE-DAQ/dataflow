@@ -16,7 +16,7 @@
 #include "daqdataformats/TriggerRecord.hpp"
 #include "dfmessages/DataRequest.hpp"
 #include "dfmessages/TriggerDecision.hpp"
-#include "dfmessages/TriggerDecisionToken.hpp"
+#include "dfmessages/DataflowHeartbeat.hpp"
 #include "dfmessages/TriggerInhibit.hpp"
 #include "trgdataformats/TriggerCandidateData.hpp"
 
@@ -40,8 +40,8 @@ ERS_DECLARE_ISSUE(dfmodules,
                   "TRBModule app " << connection_name << ": " << message,
                   ((std::string)connection_name)((std::string)message))
 ERS_DECLARE_ISSUE(dfmodules,
-                  UnknownTokenSource,
-                  "Token from unknown source: " << connection_name,
+                  UnknownHeartbeatSource,
+                  "Heartbeat from unknown source: " << connection_name,
                   ((std::string)connection_name))
 ERS_DECLARE_ISSUE(dfmodules,
                   DFOModuleRunNumberMismatch,
@@ -107,7 +107,7 @@ private:
 
   void generate_opmon_data() override;
 
-  virtual void receive_trigger_complete_token(const dfmessages::TriggerDecisionToken&);
+  virtual void receive_dataflow_heartbeat(const dfmessages::DataflowHeartbeat&);
   void receive_trigger_decision(const dfmessages::TriggerDecision&);
   virtual bool is_busy() const;
   bool is_empty() const;
@@ -115,16 +115,19 @@ private:
   void notify_trigger(bool busy) const;
   bool dispatch(const std::shared_ptr<AssignedTriggerDecision>& assignment);
   virtual void assign_trigger_decision(const std::shared_ptr<AssignedTriggerDecision>& assignment);
+  virtual std::vector<dfmessages::trigger_number_t> get_acknowledgements(
+    const std::shared_ptr<AssignedTriggerDecision>& assignment);
 
   // Configuration
   const appmodel::DFOConf* m_dfo_conf;
+  std::string m_dfo_id;
   std::chrono::milliseconds m_queue_timeout;
   std::chrono::microseconds m_stop_timeout;
   dunedaq::daqdataformats::run_number_t m_run_number;
 
   // Connections
   std::shared_ptr<iomanager::SenderConcept<dfmessages::TriggerInhibit>> m_busy_sender;
-  std::string m_token_connection;
+  std::vector<std::string> m_heartbeat_connections;
   std::string m_td_connection;
   size_t m_td_send_retries;
   size_t m_busy_threshold;
@@ -133,7 +136,9 @@ private:
   // Coordination
   std::atomic<bool> m_running_status{ false };
   mutable std::atomic<bool> m_last_notified_busy{ false };
-  std::chrono::steady_clock::time_point m_last_token_received;
+  mutable std::chrono::steady_clock::time_point m_last_notified_busy_time;
+  std::chrono::milliseconds m_busy_interval;
+  std::chrono::steady_clock::time_point m_last_heartbeat_received;
   std::chrono::steady_clock::time_point m_last_td_received;
 
   // Struct for statistic
@@ -154,14 +159,15 @@ private:
   }
   
   // Statistics
-  std::atomic<uint64_t> m_received_tokens{ 0 };      // NOLINT (build/unsigned)
+  std::atomic<uint64_t> m_received_heartbeats{ 0 };      // NOLINT (build/unsigned)
   std::atomic<uint64_t> m_sent_decisions{ 0 };       // NOLINT (build/unsigned)
   std::atomic<uint64_t> m_received_decisions{ 0 };   // NOLINT (build/unsigned)
   std::atomic<uint64_t> m_waiting_for_decision{ 0 }; // NOLINT (build/unsigned)
   std::atomic<uint64_t> m_deciding_destination{ 0 }; // NOLINT (build/unsigned)
   std::atomic<uint64_t> m_forwarding_decision{ 0 };  // NOLINT (build/unsigned)
-  std::atomic<uint64_t> m_waiting_for_token{ 0 };    // NOLINT (build/unsigned)
-  std::atomic<uint64_t> m_processing_token{ 0 };     // NOLINT (build/unsigned)
+  std::atomic<uint64_t> m_waiting_for_heartbeat{ 0 };    // NOLINT (build/unsigned)
+  std::atomic<uint64_t> m_processing_heartbeat{ 0 };     // NOLINT (build/unsigned)
+  std::atomic<uint64_t> m_heartbeat_updates{ 0 };     // NOLINT (build/unsigned)
   std::map<dunedaq::trgdataformats::TriggerCandidateData::Type, TriggerData> m_trigger_counters;
   std::mutex m_trigger_mutex;  // used to safely handle the map above
   TriggerData & get_trigger_counter(trgdataformats::TriggerCandidateData::Type type) {

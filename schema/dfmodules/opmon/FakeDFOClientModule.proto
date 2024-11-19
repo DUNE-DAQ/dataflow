@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package dunedaq.dfmodules.opmon;
+
+
+// regular metric published byt the DFO
+message FakeDFOClientInfo {
+
+  // counters 
+  uint64 decisions_received = 1;
+  uint64 tokens_sent = 2;
+}
