@@ -17,6 +17,7 @@ Options:
     -n <number of times to run each individual test, default=1>
     -N <number of times to run the full set of selected tests, default=1>
     --stop-on-failure : causes the script to stop when one of the integtests reports a failure
+    --stop-on-skip : causes the script to stop when one of the integtests skips a test
 """
     let counter=0
     echo "List of available tests:"
@@ -27,7 +28,7 @@ Options:
     echo ""
 }
 
-TEMP=`getopt -o hs:f:l:n:N: --long help,stop-on-failure -- "$@"`
+TEMP=`getopt -o hs:f:l:n:N: --long help,stop-on-failure,stop-on-skip -- "$@"`
 eval set -- "$TEMP"
 
 let session_number=1
@@ -36,6 +37,7 @@ let last_test_index=999
 let individual_run_count=1
 let overall_run_count=1
 let stop_on_failure=0
+let stop_on_skip=0
 
 while true; do
     case "$1" in
@@ -65,6 +67,10 @@ while true; do
             ;;
         --stop-on-failure)
             let stop_on_failure=1
+            shift
+            ;;
+        --stop-on-skip)
+            let stop_on_skip=1
             shift
             ;;
         --)
@@ -102,7 +108,16 @@ while [[ ${overall_loop_count} -lt ${overall_run_count} ]]; do
         let individual_loop_count=${individual_loop_count}+1
 
         if [[ ${stop_on_failure} -gt 0 ]]; then
-            if [[ ${pytest_return_code} -ne 0 ]]; then
+            search_result=`tail -20 ${ITGRUNNER_LOG_FILE} | grep -i fail`
+            #echo "failure search result is ${search_result}"
+            if [[ ${search_result} != "" || ${pytest_return_code} -ne 0 ]]; then
+                break 3
+            fi
+        fi
+        if [[ ${stop_on_skip} -gt 0 ]]; then
+            search_result=`tail -20 ${ITGRUNNER_LOG_FILE} | grep -i skip`
+            #echo "skip search result is ${search_result}"
+            if [[ ${search_result} != "" ]]; then
                 break 3
             fi
         fi
