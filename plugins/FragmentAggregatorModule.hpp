@@ -61,10 +61,11 @@ private:
   void process_data_request(dfmessages::DataRequest&);
   void process_fragment(std::unique_ptr<daqdataformats::Fragment>&);
 
-  // Input Connection namess
+  // Input and Output Connection namess
   std::string m_data_req_input;
   std::string m_fragment_input;
   std::map<int, std::string> m_producer_conn_ids;
+  std::vector<std::string> m_trb_conn_ids;
 
   // Stats
   std::atomic<int> m_packets_processed{ 0 };
