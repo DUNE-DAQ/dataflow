@@ -135,10 +135,11 @@ public:
     m_max_file_size = m_config_params->get_max_file_size();
     m_disable_unique_suffix = m_config_params->get_disable_unique_filename_suffix();
     m_free_space_safety_factor_for_write = m_config_params->get_free_space_safety_factor();
-    m_enable_compression = m_config_params->get_enable_compression();
     if (m_free_space_safety_factor_for_write < 1.1) {
       m_free_space_safety_factor_for_write = 1.1;
     }
+    m_compression_level = m_config_params->get_compression_level();
+    TLOG() << "m_compression_level is " << m_compression_level;
 
     m_file_index = 0;
     m_recorded_size = 0;
@@ -395,7 +396,7 @@ private:
   size_t m_max_file_size;
   bool m_disable_unique_suffix;
   float m_free_space_safety_factor_for_write;
-  bool m_enable_compression;
+  uint8_t m_compression_level;
 
   // std::unique_ptr<HDF5KeyTranslator> m_key_translator_ptr;
 
@@ -484,6 +485,7 @@ private:
                                         m_writer_identifier,
                                         m_file_layout_params,
                                         hdf5libs::HDF5SourceIDHandler::make_source_id_geo_id_map(m_session),
+                                        m_compression_level,
                                         ".writing",
                                         open_flags));
       } catch (std::exception const& excpt) {
