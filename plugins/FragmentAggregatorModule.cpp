@@ -54,6 +54,9 @@ FragmentAggregatorModule::init(std::shared_ptr<appfwk::ModuleConfiguration> mcfg
 	auto qid = cr->cast<confmodel::QueueWithSourceId>();
       	    m_producer_conn_ids[qid->get_source_id()] = cr->UID();
     }
+    if (cr->get_data_type() == datatype_to_string<std::unique_ptr<daqdataformats::Fragment>>()) {
+      m_trb_conn_ids.push_back(cr->UID());
+    }
   }
 
   // this is just to get the data request receiver registered early (before Start)
@@ -74,7 +77,15 @@ void
 FragmentAggregatorModule::do_start(const data_t& /* args */)
 {
   m_packets_processed = 0;
+
   auto iom = iomanager::IOManager::get();
+  for (auto trb_conn : m_trb_conn_ids) {
+    auto sender = iom->get_sender<std::unique_ptr<daqdataformats::Fragment>>(trb_conn);
+    if (sender != nullptr) {
+      bool is_ready = sender->is_ready_for_sending(std::chrono::milliseconds(100));
+      TLOG_DEBUG(0) << "The sender for " << trb_conn << " " << (is_ready ? "is" : "is not") << " ready.";
+    }
+  }
   iom->add_callback<dfmessages::DataRequest>(
     m_data_req_input, std::bind(&FragmentAggregatorModule::process_data_request, this, std::placeholders::_1));
   iom->add_callback<std::unique_ptr<daqdataformats::Fragment>>(
