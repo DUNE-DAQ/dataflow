@@ -86,7 +86,7 @@ public:
   DFOModule(DFOModule&&) = delete;            ///< DFOModule is not move-constructible
   DFOModule& operator=(DFOModule&&) = delete; ///< DFOModule is not move-assignable
 
-  void init(std::shared_ptr<appfwk::ModuleConfiguration> mcfg) override;
+  void init(std::shared_ptr<appfwk::ConfigurationManager> mcfg) override;
 
 protected:
   virtual std::shared_ptr<AssignedTriggerDecision> find_slot(const dfmessages::TriggerDecision& decision);

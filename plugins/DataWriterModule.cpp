@@ -60,10 +60,10 @@ DataWriterModule::DataWriterModule(const std::string& name)
 }
 
 void
-DataWriterModule::init(std::shared_ptr<appfwk::ModuleConfiguration> mcfg)
+DataWriterModule::init(std::shared_ptr<appfwk::ConfigurationManager> mcfg)
 {
   TLOG_DEBUG(TLVL_ENTER_EXIT_METHODS) << get_name() << ": Entering init() method";
-  auto mdal = mcfg->module<appmodel::DataWriterModule>(get_name());
+  auto mdal = mcfg->get_dal<appmodel::DataWriterModule>(get_name());
   if (!mdal) {
     throw appfwk::CommandFailed(ERS_HERE, "init", get_name(), "Unable to retrieve configuration object");
   }
@@ -102,7 +102,7 @@ DataWriterModule::init(std::shared_ptr<appfwk::ModuleConfiguration> mcfg)
     }
   }
 
-  auto trbdal = mcfg->module<appmodel::TRBModule>(trb_uid);
+  auto trbdal = mcfg->get_dal<appmodel::TRBModule>(trb_uid);
   if (!trbdal) {
     throw appfwk::CommandFailed(ERS_HERE, "init", get_name(), "Unable to retrieve TRB configuration object");
   }

@@ -51,10 +51,10 @@ TPStreamWriterModule::TPStreamWriterModule(const std::string& name)
 }
 
 void
-TPStreamWriterModule::init(std::shared_ptr<appfwk::ModuleConfiguration> mcfg)
+TPStreamWriterModule::init(std::shared_ptr<appfwk::ConfigurationManager> mcfg)
 {
   TLOG_DEBUG(TLVL_ENTER_EXIT_METHODS) << get_name() << ": Entering init() method";
-  auto mdal = mcfg->module<appmodel::TPStreamWriterModule>(get_name());
+  auto mdal = mcfg->get_dal<appmodel::TPStreamWriterModule>(get_name());
   if (!mdal) {
     throw appfwk::CommandFailed(ERS_HERE, "init", get_name(), "Unable to retrieve configuration object");
   }

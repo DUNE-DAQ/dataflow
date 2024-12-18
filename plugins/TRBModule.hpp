@@ -182,7 +182,7 @@ public:
   TRBModule(TRBModule&&) = delete;            ///< TRBModule is not move-constructible
   TRBModule& operator=(TRBModule&&) = delete; ///< TRBModule is not move-assignable
 
-  void init(std::shared_ptr<appfwk::ModuleConfiguration> mcfg) override;
+  void init(std::shared_ptr<appfwk::ConfigurationManager> mcfg) override;
 
   void generate_opmon_data() override;
 
