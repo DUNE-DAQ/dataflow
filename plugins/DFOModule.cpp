@@ -79,6 +79,9 @@ DFOModule::init(std::shared_ptr<appfwk::ModuleConfiguration> mcfg)
     if (con->get_data_type() == datatype_to_string<dfmessages::TriggerInhibit>()) {
       m_busy_sender = iom->get_sender<dfmessages::TriggerInhibit>(con->UID());
     }
+    if (con->get_data_type() == datatype_to_string<dfmessages::TriggerDecision>()) {
+      m_trb_conn_ids.push_back(con->UID());
+    }
   }
 
   if (m_token_connection == "") {
@@ -132,6 +135,13 @@ DFOModule::do_start(const data_t& payload)
   m_last_token_received = m_last_td_received = std::chrono::steady_clock::now();
 
   auto iom = iomanager::IOManager::get();
+  for (auto trb_conn : m_trb_conn_ids) {
+    auto sender = iom->get_sender<dfmessages::TriggerDecision>(trb_conn);
+    if (sender != nullptr) {
+      bool is_ready = sender->is_ready_for_sending(std::chrono::milliseconds(100));
+      TLOG_DEBUG(0) << "The sender for " << trb_conn << " " << (is_ready ? "is" : "is not") << " ready.";
+    }
+  }
   iom->add_callback<dfmessages::TriggerDecisionToken>(
     m_token_connection, std::bind(&DFOModule::receive_trigger_complete_token, this, std::placeholders::_1));
 

@@ -129,6 +129,7 @@ private:
   size_t m_td_send_retries;
   size_t m_busy_threshold;
   size_t m_free_threshold;
+  std::vector<std::string> m_trb_conn_ids;
 
   // Coordination
   std::atomic<bool> m_running_status{ false };
