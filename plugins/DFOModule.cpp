@@ -134,12 +134,18 @@ DFOModule::do_start(const data_t& payload)
 
   m_last_token_received = m_last_td_received = std::chrono::steady_clock::now();
 
+  // 19-Dec-2024, KAB: check that TriggerDecision senders are ready to send. This is done
+  // so that the IOManager infrastructure fetches the necessary connection details from
+  // the ConnectivityService at 'start' time, instead of the first time that the sender
+  // is used to send a message.  This avoids delays in the sending of the first TD in
+  // the first data-taking run in a DAQ session. Such delays can lead to undesirable
+  // system behavior like trigger inhibits.
   auto iom = iomanager::IOManager::get();
   for (auto trb_conn : m_trb_conn_ids) {
     auto sender = iom->get_sender<dfmessages::TriggerDecision>(trb_conn);
     if (sender != nullptr) {
       bool is_ready = sender->is_ready_for_sending(std::chrono::milliseconds(100));
-      TLOG_DEBUG(0) << "The sender for " << trb_conn << " " << (is_ready ? "is" : "is not") << " ready.";
+      TLOG_DEBUG(0) << "The TriggerDecision sender for " << trb_conn << " " << (is_ready ? "is" : "is not") << " ready.";
     }
   }
   iom->add_callback<dfmessages::TriggerDecisionToken>(
