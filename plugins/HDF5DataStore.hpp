@@ -139,7 +139,6 @@ public:
       m_free_space_safety_factor_for_write = 1.1;
     }
     m_compression_level = m_config_params->get_compression_level();
-    TLOG() << "m_compression_level is " << m_compression_level;
 
     m_file_index = 0;
     m_recorded_size = 0;
