@@ -135,6 +135,10 @@ DFOModule::do_start(const data_t& payload)
   m_last_token_received = m_last_td_received = std::chrono::steady_clock::now();
 
   auto iom = iomanager::IOManager::get();
+  if (m_busy_sender != nullptr) {
+    bool is_ready = m_busy_sender->is_ready_for_sending(std::chrono::milliseconds(100));
+    TLOG_DEBUG(0) << "The sender for TriggerInhibit messages " << (is_ready ? "is" : "is not") << " ready.";
+  }
   for (auto trb_conn : m_trb_conn_ids) {
     auto sender = iom->get_sender<dfmessages::TriggerDecision>(trb_conn);
     if (sender != nullptr) {
