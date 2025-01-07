@@ -70,7 +70,7 @@ TRBModule::TRBModule(const std::string& name)
 }
 
 void
-TRBModule::init(std::shared_ptr<appfwk::ModuleConfiguration> mcfg)
+TRBModule::init(std::shared_ptr<appfwk::ConfigurationManager> mcfg)
 {
 
   TLOG_DEBUG(TLVL_ENTER_EXIT_METHODS) << get_name() << ": Entering init() method";
@@ -79,7 +79,7 @@ TRBModule::init(std::shared_ptr<appfwk::ModuleConfiguration> mcfg)
   // Get single queues
   //---------------------------------
 
-  auto mdal = mcfg->module<appmodel::TRBModule>(get_name());
+  auto mdal = mcfg->get_dal<appmodel::TRBModule>(get_name());
   if (!mdal) {
     throw appfwk::CommandFailed(ERS_HERE, "init", get_name(), "Unable to retrieve configuration object");
   }

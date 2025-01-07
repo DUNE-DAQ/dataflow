@@ -114,7 +114,7 @@ public:
    *
    */
   explicit HDF5DataStore(std::string const& name,
-                         std::shared_ptr<appfwk::ModuleConfiguration> mcfg,
+                         std::shared_ptr<appfwk::ConfigurationManager> mcfg,
                          std::string const& writer_name)
     : DataStore(name)
     , m_basic_name_of_open_file("")
@@ -124,11 +124,11 @@ public:
   {
     TLOG_DEBUG(TLVL_BASIC) << get_name();
 
-    m_config_params = mcfg->module<appmodel::DataStoreConf>(name);
+    m_config_params = mcfg->get_dal<appmodel::DataStoreConf>(name);
     m_file_layout_params = m_config_params->get_file_layout_params();
-    m_session = mcfg->configuration_manager()->session();
-    m_operational_environment = mcfg->configuration_manager()->session()->get_detector_configuration()->get_op_env();
-    m_offline_data_stream = mcfg->configuration_manager()->session()->get_detector_configuration()->get_offline_data_stream();
+    m_session = mcfg->session();
+    m_operational_environment = mcfg->session()->get_detector_configuration()->get_op_env();
+    m_offline_data_stream = mcfg->session()->get_detector_configuration()->get_offline_data_stream();
 
     m_operation_mode = m_config_params->get_mode();
     m_path = m_config_params->get_directory_path();

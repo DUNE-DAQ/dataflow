@@ -45,7 +45,7 @@ public:
   DataWriterModule(DataWriterModule&&) = delete;                 ///< DataWriterModule is not move-constructible
   DataWriterModule& operator=(DataWriterModule&&) = delete;      ///< DataWriterModule is not move-assignable
 
-  void init(std::shared_ptr<appfwk::ModuleConfiguration> mcfg) override;
+  void init(std::shared_ptr<appfwk::ConfigurationManager> mcfg) override;
   void generate_opmon_data() override;
 
 private:
@@ -60,7 +60,7 @@ private:
   std::atomic<bool> m_running = false;
 
   // Configuration
-  std::shared_ptr<appfwk::ModuleConfiguration> m_module_configuration;
+  std::shared_ptr<appfwk::ConfigurationManager> m_module_configuration;
   const appmodel::DataWriterConf* m_data_writer_conf;
   std::string m_writer_identifier;
 

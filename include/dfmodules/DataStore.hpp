@@ -15,7 +15,7 @@
 #ifndef DFMODULES_INCLUDE_DFMODULES_DATASTORE_HPP_
 #define DFMODULES_INCLUDE_DFMODULES_DATASTORE_HPP_
 
-#include "appfwk/ModuleConfiguration.hpp"
+#include "appfwk/ConfigurationManager.hpp"
 #include "opmonlib/MonitorableObject.hpp"
 #include "cetlib/BasicPluginFactory.h"
 #include "cetlib/compiler_macros.h"
@@ -47,7 +47,7 @@
 #define DEFINE_DUNE_DATA_STORE(klass)                                                                                  \
   EXTERN_C_FUNC_DECLARE_START                                                                                          \
   std::shared_ptr<dunedaq::dfmodules::DataStore> make(const std::string& name,                                         \
-                                                      std::shared_ptr<dunedaq::appfwk::ModuleConfiguration> mcfg,      \
+                                                      std::shared_ptr<dunedaq::appfwk::ConfigurationManager> mcfg,      \
 		  				      const std::string& writer_name	)                              \
   {                                                                                                                    \
     return std::shared_ptr<dunedaq::dfmodules::DataStore>(new klass(name, mcfg, writer_name));                         \
@@ -163,7 +163,7 @@ private:
 inline std::shared_ptr<DataStore>
 make_data_store(const std::string& type,
                 const std::string& name,
-                std::shared_ptr<dunedaq::appfwk::ModuleConfiguration> mcfg,
+                std::shared_ptr<dunedaq::appfwk::ConfigurationManager> mcfg,
 		const std::string& writer_identifier)
 {
   static cet::BasicPluginFactory bpf("duneDataStore", "make"); // NOLINT

@@ -8,7 +8,6 @@
  */
 
 #include "dfmodules/DataStore.hpp"
-#include "appfwk/ModuleConfiguration.hpp"
 
 #include "appmodel/DataWriterModule.hpp"
 #include "appmodel/DataWriterConf.hpp"
@@ -129,7 +128,6 @@ struct CfgFixture
     std::string oksConfig = "oksconflibs:test/config/hdf5write_test.data.xml";
     std::string appName = "TestApp";
     cfgMgr = std::make_shared<dunedaq::appfwk::ConfigurationManager>(oksConfig, appName, sessionName);
-    modCfg = std::make_shared<dunedaq::appfwk::ModuleConfiguration>(cfgMgr);
     TLOG_DEBUG(4) << "Done with CfgFixture";
   }
 
@@ -139,7 +137,6 @@ struct CfgFixture
   }
 
   std::shared_ptr<dunedaq::appfwk::ConfigurationManager> cfgMgr;
-  std::shared_ptr<dunedaq::appfwk::ModuleConfiguration> modCfg;
 };
 
 BOOST_AUTO_TEST_SUITE(HDF5Write_test)
@@ -159,14 +156,14 @@ BOOST_AUTO_TEST_CASE(WriteEventFiles)
 
   // create the DataStore
   CfgFixture cfg("test-session-3-1");
-  auto data_writer_conf = cfg.modCfg->module<dunedaq::appmodel::DataWriterModule>("dwm-01")->get_configuration();
+  auto data_writer_conf = cfg.cfgMgr->get_dal<dunedaq::appmodel::DataWriterModule>("dwm-01")->get_configuration();
   auto data_store_conf = data_writer_conf->get_data_store_params();
 
   auto data_store_conf_obj = data_store_conf->config_object();
   data_store_conf_obj.set_by_val<std::string>("directory_path", file_path);
   data_store_conf_obj.set_by_val<std::string>("mode", "one-event-per-file");
 
-  auto data_store_ptr = make_data_store(data_store_conf->get_type(), data_store_conf->UID(), cfg.modCfg, "dwm-01");
+  auto data_store_ptr = make_data_store(data_store_conf->get_type(), data_store_conf->UID(), cfg.cfgMgr, "dwm-01");
 
   // write several events, each with several fragments
   for (int trigger_number = 1; trigger_number <= trigger_count; ++trigger_number)
@@ -200,13 +197,13 @@ BOOST_AUTO_TEST_CASE(WriteOneFile)
 
   // create the DataStore
   CfgFixture cfg("test-session-3-1");
-  auto data_writer_conf = cfg.modCfg->module<dunedaq::appmodel::DataWriterModule>("dwm-01")->get_configuration();
+  auto data_writer_conf = cfg.cfgMgr->get_dal<dunedaq::appmodel::DataWriterModule>("dwm-01")->get_configuration();
   auto data_store_conf = data_writer_conf->get_data_store_params();
 
   auto data_store_conf_obj = data_store_conf->config_object();
   data_store_conf_obj.set_by_val<std::string>("directory_path", file_path);
 
-  auto data_store_ptr = make_data_store(data_store_conf->get_type(), data_store_conf->UID(), cfg.modCfg, "dwm-01");
+  auto data_store_ptr = make_data_store(data_store_conf->get_type(), data_store_conf->UID(), cfg.cfgMgr, "dwm-01");
     
   // write several events, each with several fragments
   for (int trigger_number = 1; trigger_number <= trigger_count; ++trigger_number)
@@ -240,13 +237,13 @@ BOOST_AUTO_TEST_CASE(CheckWritingSuffix)
 
   // create the DataStore
   CfgFixture cfg("test-session-3-1");
-  auto data_writer_conf = cfg.modCfg->module<dunedaq::appmodel::DataWriterModule>("dwm-01")->get_configuration();
+  auto data_writer_conf = cfg.cfgMgr->get_dal<dunedaq::appmodel::DataWriterModule>("dwm-01")->get_configuration();
   auto data_store_conf = data_writer_conf->get_data_store_params();
 
   auto data_store_conf_obj = data_store_conf->config_object();
   data_store_conf_obj.set_by_val<std::string>("directory_path", file_path);
 
-  auto data_store_ptr = make_data_store(data_store_conf->get_type(), data_store_conf->UID(), cfg.modCfg, "dwm-01");
+  auto data_store_ptr = make_data_store(data_store_conf->get_type(), data_store_conf->UID(), cfg.cfgMgr, "dwm-01");
   
   // write several events, each with several fragments
   for (int trigger_number = 1; trigger_number <= trigger_count; ++trigger_number) {
@@ -289,14 +286,14 @@ BOOST_AUTO_TEST_CASE(FileSizeLimitResultsInMultipleFiles)
 
   // create the DataStore
   CfgFixture cfg("test-session-5-10");
-  auto data_writer_conf = cfg.modCfg->module<dunedaq::appmodel::DataWriterModule>("dwm-01")->get_configuration();
+  auto data_writer_conf = cfg.cfgMgr->get_dal<dunedaq::appmodel::DataWriterModule>("dwm-01")->get_configuration();
   auto data_store_conf = data_writer_conf->get_data_store_params();
 
   auto data_store_conf_obj = data_store_conf->config_object();
   data_store_conf_obj.set_by_val<std::string>("directory_path", file_path);
   data_store_conf_obj.set_by_val<int>("max_file_size", 3000000); // goal is 6 events per file
 
-  auto data_store_ptr = make_data_store(data_store_conf->get_type(), data_store_conf->UID(), cfg.modCfg, "dwm-01");
+  auto data_store_ptr = make_data_store(data_store_conf->get_type(), data_store_conf->UID(), cfg.cfgMgr, "dwm-01");
   
   // write several events, each with several fragments
   for (int trigger_number = 1; trigger_number <= trigger_count; ++trigger_number)
@@ -333,14 +330,14 @@ BOOST_AUTO_TEST_CASE(SmallFileSizeLimitDataBlockListWrite)
 
   // create the DataStore
   CfgFixture cfg("test-session-5-1");
-  auto data_writer_conf = cfg.modCfg->module<dunedaq::appmodel::DataWriterModule>("dwm-01")->get_configuration();
+  auto data_writer_conf = cfg.cfgMgr->get_dal<dunedaq::appmodel::DataWriterModule>("dwm-01")->get_configuration();
   auto data_store_conf = data_writer_conf->get_data_store_params();
 
   auto data_store_conf_obj = data_store_conf->config_object();
   data_store_conf_obj.set_by_val<std::string>("directory_path", file_path);
   data_store_conf_obj.set_by_val<int>("max_file_size", 150000); // ~1.5 Fragment, ~0.3 TR
 
-  auto data_store_ptr = make_data_store(data_store_conf->get_type(), data_store_conf->UID(), cfg.modCfg,"dwm-01");
+  auto data_store_ptr = make_data_store(data_store_conf->get_type(), data_store_conf->UID(), cfg.cfgMgr,"dwm-01");
 
   // write several events, each with several fragments
   for (int trigger_number = 1; trigger_number <= trigger_count; ++trigger_number)

@@ -44,8 +44,7 @@ struct CfgFixture
     std::string appName = "TestApp";
     std::string sessionName = "partition_name";
     cfgMgr = std::make_shared<dunedaq::appfwk::ConfigurationManager>(oksConfig, appName, sessionName);
-    modCfg  = std::make_shared<dunedaq::appfwk::ModuleConfiguration>(cfgMgr);
-    get_iomanager()->configure(sessionName, modCfg->queues(), modCfg->networkconnections(), nullptr, opmgr);
+    get_iomanager()->configure(sessionName, cfgMgr->queues(), cfgMgr->networkconnections(), nullptr, opmgr);
   }
   ~CfgFixture() {
     get_iomanager()->reset();
@@ -63,7 +62,6 @@ struct CfgFixture
   
   dunedaq::opmonlib::TestOpMonManager opmgr;
   std::shared_ptr<dunedaq::appfwk::ConfigurationManager> cfgMgr;
-  std::shared_ptr<dunedaq::appfwk::ModuleConfiguration> modCfg;
 };
 
 BOOST_FIXTURE_TEST_SUITE(DFOModule_test, CfgFixture)
@@ -140,14 +138,14 @@ BOOST_AUTO_TEST_CASE(Constructor)
 BOOST_AUTO_TEST_CASE(Init)
 {
   auto dfo = appfwk::make_module("DFOModule", "test");
-  dfo->init(modCfg);
+  dfo->init(cfgMgr);
 }
 
 BOOST_AUTO_TEST_CASE(Commands)
 {
   auto dfo = appfwk::make_module("DFOModule", "test");
   opmgr.register_node("dfo", dfo);
-  dfo->init(modCfg);
+  dfo->init(cfgMgr);
 
   auto conf_json = "{\"thresholds\": { \"free\": 1, \"busy\": 2 }, "
                    "\"general_queue_timeout\": 100, \"td_send_retries\": 5}"_json;
@@ -175,7 +173,7 @@ BOOST_AUTO_TEST_CASE(DataFlow)
 {
   auto dfo = appfwk::make_module("DFOModule", "test");
   opmgr.register_node("dfo", dfo);
-  dfo->init(modCfg);
+  dfo->init(cfgMgr);
 
   auto conf_json = "{\"thresholds\": { \"free\": 1, \"busy\": 2 }, "
                    "\"general_queue_timeout\": 100, \"td_send_retries\": 5}"_json;
@@ -244,7 +242,7 @@ BOOST_AUTO_TEST_CASE(SendTrigDecFailed)
 {
   auto dfo = appfwk::make_module("DFOModule", "test");
   opmgr.register_node("dfo", dfo);
-  dfo->init(modCfg);
+  dfo->init(cfgMgr);
 
   auto conf_json = "{\"thresholds\": { \"free\": 1, \"busy\": 2 }, "
                    "\"general_queue_timeout\": 100, \"td_send_retries\": 5}"_json;
