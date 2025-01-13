@@ -141,6 +141,10 @@ DFOModule::do_start(const data_t& payload)
   // the first data-taking run in a DAQ session. Such delays can lead to undesirable
   // system behavior like trigger inhibits.
   auto iom = iomanager::IOManager::get();
+  if (m_busy_sender != nullptr) {
+    bool is_ready = m_busy_sender->is_ready_for_sending(std::chrono::milliseconds(100));
+    TLOG_DEBUG(0) << "The sender for TriggerInhibit messages " << (is_ready ? "is" : "is not") << " ready.";
+  }
   for (auto trb_conn : m_trb_conn_ids) {
     auto sender = iom->get_sender<dfmessages::TriggerDecision>(trb_conn);
     if (sender != nullptr) {
@@ -190,7 +194,7 @@ DFOModule::do_stop(const data_t& /*args*/)
     ers::error(IncompleteTriggerDecision(ERS_HERE, r->decision.trigger_number, m_run_number));
   }
 
-  std::lock_guard<std::mutex> guard(m_trigger_mutex);
+  std::lock_guard<std::mutex> guard(m_trigger_counters_mutex);
   m_trigger_counters.clear();
   
   TLOG() << get_name() << " successfully stopped";
@@ -235,7 +239,7 @@ DFOModule::receive_trigger_decision(const dfmessages::TriggerDecision& decision)
     if (assignment == nullptr) { // this can happen if all application are in error state
       ers::error(UnableToAssign(ERS_HERE, decision.trigger_number));
       usleep(500);
-      notify_trigger(is_busy());
+      notify_trigger_if_needed();
       continue;
     }
 
@@ -258,7 +262,7 @@ DFOModule::receive_trigger_decision(const dfmessages::TriggerDecision& decision)
 
   } while (m_running_status.load());
 
-  notify_trigger(is_busy());
+  notify_trigger_if_needed();
 
   m_waiting_for_decision +=
     std::chrono::duration_cast<std::chrono::microseconds>(decision_received - m_last_td_received).count();
@@ -350,7 +354,7 @@ DFOModule::generate_opmon_data()
   info.set_processing_token(m_processing_token.exchange(0));
   publish( std::move(info) );
 
-  std::lock_guard<std::mutex>	guard(m_trigger_mutex);
+  std::lock_guard<std::mutex>	guard(m_trigger_counters_mutex);
   for ( auto & [type, counts] : m_trigger_counters ) {
     opmon::TriggerInfo ti;
     ti.set_received(counts.received.exchange(0));
@@ -412,9 +416,7 @@ DFOModule::receive_trigger_complete_token(const dfmessages::TriggerDecisionToken
     app_it->second->set_in_error(false);
   }
 
-  if (!app_it->second->is_busy()) {
-    notify_trigger(false);
-  }
+  notify_trigger_if_needed();
 
   m_waiting_for_token +=
     std::chrono::duration_cast<std::chrono::microseconds>(callback_start - m_last_token_received).count();
@@ -454,9 +456,16 @@ DFOModule::used_slots() const
 }
 
 void
-DFOModule::notify_trigger(bool busy) const
+DFOModule::notify_trigger_if_needed() const
 {
+  // 19-Dec-2024, KAB, ELF, MaR: combined the is_busy() and notify_trigger() calls in
+  // a single method (notify_trigger_if_needed), and protected the contents of the new
+  // method with a mutex, to avoid a race condition in which a given is_busy() result
+  // is determined, but by the time that the value is sent to the MLT, the busy state
+  // has changed.
+  std::lock_guard<std::mutex> guard(m_notify_trigger_mutex);
 
+  bool busy = is_busy();
   if (busy == m_last_notified_busy.load())
     return;
 
